@@ -1,4 +1,6 @@
-# Setup
+# Setup - scrapper
+
+    $ cd scrapper
 
 ## Create venv
 
