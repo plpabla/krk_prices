@@ -22,6 +22,46 @@ npm run dev
 
 The application will be available at `http://localhost:5173` by default.
 
+## Project Structure
+
+```
+frontend/
+├── src/                    # Source code directory
+│   ├── assets/            # Static assets (images, fonts, etc.)
+│   ├── components/        # React components
+│   │   ├── form-fields/   # Form field components
+│   │   ├── FormFields.tsx # Form fields container
+│   │   ├── FlatEstimationForm.tsx # Main form component
+│   │   └── Footer.tsx     # Footer component
+│   ├── types/             # TypeScript type definitions
+│   │   ├── form.ts        # Form-related types
+│   │   └── enums.ts       # Enum definitions
+│   ├── App.tsx            # Root application component
+│   └── main.tsx           # Application entry point
+├── public/                # Public static files
+├── index.html            # HTML entry point
+├── vite.config.ts        # Vite configuration
+├── tsconfig.json         # TypeScript configuration
+└── package.json          # Project dependencies and scripts
+```
+
+### Key Components
+
+- `FlatEstimationForm`: Main form component for flat estimation
+- `FormFields`: Container component managing form field sections
+- `form-fields/`: Directory containing individual form field components:
+  - `BasicInformation`: Basic property details
+  - `RoomDetails`: Room-specific information
+  - `AdditionalDetails`: Additional property features
+  - `OwnershipDetails`: Property ownership information
+
+### Type System
+
+The application uses TypeScript with two main type definition files:
+
+- `types/form.ts`: Contains form-related interfaces and types
+- `types/enums.ts`: Contains enumerated types used throughout the application
+
 ## Building and Deployment
 
 ### Local Build
