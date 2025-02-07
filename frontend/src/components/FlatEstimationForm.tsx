@@ -7,8 +7,7 @@ import FormFields from "./FormFields";
 const FlatEstimationForm: React.FC = () => {
   const [formData, setFormData] = useState<FormData>(defaultFormData);
 
-  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = event.target;
+  const handleChange = (name: string, value: string | number | null) => {
     setFormData((prev) => ({
       ...prev,
       [name]: value,

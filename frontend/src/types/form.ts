@@ -8,11 +8,11 @@ import {
 
 export interface FormData {
   name: string;
-  area: string;
-  rooms: string;
+  area: number | null;
+  rooms: number | null;
   heating: HeatingType;
-  floor: string;
-  rent: string;
+  floor: number | null;
+  rent: number | null;
   state: StateType;
   market: MarketType;
   ownership: OwnershipType;
@@ -23,11 +23,11 @@ export interface FormData {
 
 export const defaultFormData: FormData = {
   name: "",
-  area: "",
-  rooms: "",
+  area: null,
+  rooms: null,
   heating: HeatingType.DISTRICT,
-  floor: "",
-  rent: "",
+  floor: null,
+  rent: null,
   state: StateType.READY_TO_MOVE,
   market: MarketType.SECONDARY,
   ownership: OwnershipType.OWNERSHIP,

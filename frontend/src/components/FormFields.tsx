@@ -21,10 +21,26 @@ import {
 
 interface FormFieldsProps {
   formData: FormData;
-  onChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  onChange: (name: string, value: string | number | null) => void;
 }
 
 const FormFields: React.FC<FormFieldsProps> = ({ formData, onChange }) => {
+  const handleTextChange = (
+    event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    onChange(event.target.name, event.target.value);
+  };
+
+  const handleNumberChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = event.target;
+    const numericValue = value === "" ? null : Number(value);
+    onChange(name, numericValue);
+  };
+
+  const handleSelectChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    onChange(event.target.name, event.target.value);
+  };
+
   return (
     <Grid container spacing={3}>
       <Grid item xs={12}>
@@ -33,7 +49,7 @@ const FormFields: React.FC<FormFieldsProps> = ({ formData, onChange }) => {
           label="Nazwa ogłoszenia"
           name="name"
           value={formData.name}
-          onChange={onChange}
+          onChange={handleTextChange}
         />
       </Grid>
 
@@ -43,8 +59,8 @@ const FormFields: React.FC<FormFieldsProps> = ({ formData, onChange }) => {
           label="Powierzchnia"
           name="area"
           type="number"
-          value={formData.area}
-          onChange={onChange}
+          value={formData.area ?? ""}
+          onChange={handleNumberChange}
           InputProps={{
             endAdornment: <InputAdornment position="end">m²</InputAdornment>,
           }}
@@ -57,8 +73,8 @@ const FormFields: React.FC<FormFieldsProps> = ({ formData, onChange }) => {
           label="Liczba pokoi"
           name="rooms"
           type="number"
-          value={formData.rooms}
-          onChange={onChange}
+          value={formData.rooms ?? ""}
+          onChange={handleNumberChange}
         />
       </Grid>
 
@@ -69,7 +85,7 @@ const FormFields: React.FC<FormFieldsProps> = ({ formData, onChange }) => {
           label="Ogrzewanie"
           name="heating"
           value={formData.heating}
-          onChange={onChange}
+          onChange={handleSelectChange}
         >
           <MenuItem value={HeatingType.DISTRICT}>Miejskie</MenuItem>
           <MenuItem value={HeatingType.GAS}>Gazowe</MenuItem>
@@ -84,8 +100,8 @@ const FormFields: React.FC<FormFieldsProps> = ({ formData, onChange }) => {
           label="Piętro"
           name="floor"
           type="number"
-          value={formData.floor}
-          onChange={onChange}
+          value={formData.floor ?? ""}
+          onChange={handleNumberChange}
         />
       </Grid>
 
@@ -95,8 +111,8 @@ const FormFields: React.FC<FormFieldsProps> = ({ formData, onChange }) => {
           label="Czynsz"
           name="rent"
           type="number"
-          value={formData.rent}
-          onChange={onChange}
+          value={formData.rent ?? ""}
+          onChange={handleNumberChange}
           InputProps={{
             endAdornment: <InputAdornment position="end">zł</InputAdornment>,
           }}
@@ -110,7 +126,7 @@ const FormFields: React.FC<FormFieldsProps> = ({ formData, onChange }) => {
           label="Stan wykończenia"
           name="state"
           value={formData.state}
-          onChange={onChange}
+          onChange={handleSelectChange}
         >
           <MenuItem value={StateType.NEEDS_RENOVATION}>Do remontu</MenuItem>
           <MenuItem value={StateType.READY_TO_MOVE}>Do zamieszkania</MenuItem>
@@ -125,7 +141,7 @@ const FormFields: React.FC<FormFieldsProps> = ({ formData, onChange }) => {
           label="Rynek"
           name="market"
           value={formData.market}
-          onChange={onChange}
+          onChange={handleSelectChange}
         >
           <MenuItem value={MarketType.PRIMARY}>Pierwotny</MenuItem>
           <MenuItem value={MarketType.SECONDARY}>Wtórny</MenuItem>
@@ -139,7 +155,7 @@ const FormFields: React.FC<FormFieldsProps> = ({ formData, onChange }) => {
           label="Forma własności"
           name="ownership"
           value={formData.ownership}
-          onChange={onChange}
+          onChange={handleSelectChange}
         >
           <MenuItem value={OwnershipType.OWNERSHIP}>Własność</MenuItem>
           <MenuItem value={OwnershipType.COOPERATIVE}>
@@ -156,7 +172,7 @@ const FormFields: React.FC<FormFieldsProps> = ({ formData, onChange }) => {
           name="available"
           type="date"
           value={formData.available}
-          onChange={onChange}
+          onChange={handleTextChange}
           InputLabelProps={{
             shrink: true,
           }}
@@ -171,7 +187,7 @@ const FormFields: React.FC<FormFieldsProps> = ({ formData, onChange }) => {
           <RadioGroup
             name="ad_type"
             value={formData.ad_type}
-            onChange={onChange}
+            onChange={handleSelectChange}
           >
             <FormControlLabel
               value={AdType.PRIVATE}
@@ -195,7 +211,7 @@ const FormFields: React.FC<FormFieldsProps> = ({ formData, onChange }) => {
           multiline
           rows={4}
           value={formData.extra_info}
-          onChange={onChange}
+          onChange={handleTextChange}
         />
       </Grid>
     </Grid>
