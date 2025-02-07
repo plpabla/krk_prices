@@ -18,9 +18,9 @@ const BasicInformation: React.FC<BasicInformationProps> = ({
       <Grid item xs={12}>
         <TextField
           fullWidth
-          label="Nazwa ogłoszenia"
-          name="name"
-          value={formData.name}
+          label="Lokalizacja"
+          name="location"
+          value={formData.location}
           onChange={onTextChange}
         />
       </Grid>

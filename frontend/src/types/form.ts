@@ -7,7 +7,7 @@ import {
 } from "./enums";
 
 export interface FormData {
-  name: string;
+  location: string;
   area: number | null;
   rooms: number | null;
   heating: HeatingType;
@@ -22,7 +22,7 @@ export interface FormData {
 }
 
 export const defaultFormData: FormData = {
-  name: "",
+  location: "",
   area: null,
   rooms: null,
   heating: HeatingType.DISTRICT,
