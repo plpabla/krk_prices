@@ -1,50 +1,62 @@
-# React + TypeScript + Vite
+# Running in dev environment
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## Installation
 
-Currently, two official plugins are available:
+1. Make sure you have Node.js 18+ installed on your system
+2. Navigate to the frontend directory:
+   ```bash
+   cd frontend
+   ```
+3. Install dependencies using npm:
+   ```bash
+   npm install
+   ```
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Run
 
-## Expanding the ESLint configuration
+To start the development server:
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
-
-- Configure the top-level `parserOptions` property like this:
-
-```js
-export default tseslint.config({
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+```bash
+npm run dev
 ```
 
-- Replace `tseslint.configs.recommended` to `tseslint.configs.recommendedTypeChecked` or `tseslint.configs.strictTypeChecked`
-- Optionally add `...tseslint.configs.stylisticTypeChecked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and update the config:
+The application will be available at `http://localhost:5173` by default.
 
-```js
-// eslint.config.js
-import react from 'eslint-plugin-react'
+## Building and Deployment
 
-export default tseslint.config({
-  // Set the react version
-  settings: { react: { version: '18.3' } },
-  plugins: {
-    // Add the react plugin
-    react,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended rules
-    ...react.configs.recommended.rules,
-    ...react.configs['jsx-runtime'].rules,
-  },
-})
-```
+### Local Build
+
+To create a production build:
+
+1. Create the build:
+
+   ```bash
+   npm run build
+   ```
+
+   This will generate the `dist` directory with optimized production files.
+
+2. To preview the production build locally:
+   ```bash
+   npm run preview
+   ```
+   The preview server will start at `http://localhost:4173` by default.
+
+### Deployment
+
+The application is built using Vite and can be deployed to any static hosting service. Here are the general steps:
+
+1. Create a production build as described above
+2. Upload the contents of the `dist` directory to your hosting service
+3. Configure your hosting service to:
+   - Serve the `index.html` for all routes (for SPA support)
+   - Set appropriate cache headers for static assets
+   - Enable HTTPS (recommended)
+
+Common hosting options include:
+
+- Netlify
+- Vercel
+- GitHub Pages
+- AWS S3 + CloudFront
+- Firebase Hosting
