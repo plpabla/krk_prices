@@ -90,7 +90,35 @@ def find_info_row(soup: BeautifulSoup, label: str) -> str:
     return "brak informacji"
 
 
-def extract_data(url: str, soup: BeautifulSoup) -> RealEstateListing:
+def save_ad_data_to_file(url: str, ad_data: dict) -> None:
+    """Save ad data as formatted JSON for analysis purposes.
+
+    Args:
+        url: The listing URL to use for the filename
+        ad_data: The ad data dictionary to save
+    """
+    try:
+        import json
+        from pathlib import Path
+
+        # Create logs directory if it doesn't exist
+        log_dir = Path("logs")
+        log_dir.mkdir(exist_ok=True)
+
+        # Create filename using URL slug
+        slug = url.split("/")[-1]
+        log_file = log_dir / f"{slug}_ad_data.json"
+
+        # Write formatted JSON
+        with open(log_file, "w", encoding="utf-8") as f:
+            json.dump(ad_data, f, indent=4, ensure_ascii=False)
+    except Exception as e:
+        print(f"Error saving ad_data to file: {str(e)}")
+
+
+def extract_data(
+    url: str, soup: BeautifulSoup, debug: bool = False
+) -> RealEstateListing:
     """Extract data from a listing page and return a RealEstateListing instance"""
     try:
         # Extract JSON data from script tag
@@ -100,6 +128,10 @@ def extract_data(url: str, soup: BeautifulSoup) -> RealEstateListing:
 
             json_data = json.loads(script_tag.string)
             ad_data = json_data.get("props", {}).get("pageProps", {}).get("ad", {})
+
+            # Save the ad data if in debug mode
+            if debug:
+                save_ad_data_to_file(url, ad_data)
 
             if not ad_data:
                 print(f"Warning: Could not find ad data in JSON for {url}")
@@ -131,48 +163,56 @@ def extract_data(url: str, soup: BeautifulSoup) -> RealEstateListing:
                     # Split by comma and strip whitespace
                     location = [part.strip() for part in location_text.split(",")]
 
-            # Try to extract price using aria-label first
-            price_element = soup.find(attrs={"aria-label": "Cena"})
-            if price_element:
-                price = extract_number(price_element.text)
-
-            # If aria-label method failed, try the JSON data
-            if not price:
-                # Price extraction from topInformation
-                top_info = ad_data.get("topInformation", [])
-                for info in top_info:
-                    if isinstance(info, dict):
-                        label = str(info.get("label", "")).lower()
-                        if "cena" in label or "price" in label:
-                            price = extract_number(str(info.get("value", 0)))
-                            break
-
-            # Area and rooms extraction from topInformation
-            top_info = ad_data.get("topInformation", [])
-            for info in top_info:
-                if isinstance(info, dict):
-                    label = str(info.get("label", "")).lower()
-                    value = info.get("value", "")
-
-                    if "powierzchnia" in label:
-                        area = extract_number(str(value))
-                    elif "pokoje" in label:
-                        rooms = value
-
-            # Extract characteristics from target
+            # Extract data from target
             target = ad_data.get("target", {})
             if target:
-                rooms = target.get("Rooms_num", rooms)
-                market = target.get("Market", market)
-                heating = target.get("Heating", heating)
-                floor = target.get("Floor_no", floor)
-                state = target.get("Construction_status", state)
-                # Try to get build year from target data
+                # Extract price
+                if "Price" in target:
+                    try:
+                        price = float(target["Price"])
+                    except (ValueError, TypeError):
+                        # Fallback to aria-label method
+                        price_element = soup.find(attrs={"aria-label": "Cena"})
+                        if price_element:
+                            price = extract_number(price_element.text)
+
+                # Extract area
+                if "Area" in target:
+                    try:
+                        area = float(target["Area"])
+                    except (ValueError, TypeError):
+                        area = None
+
+                # Extract rooms
+                if "Rooms_num" in target and target["Rooms_num"]:
+                    try:
+                        rooms = target["Rooms_num"][0]
+                    except (IndexError, TypeError):
+                        rooms = "brak informacji"
+
+                # Extract build year
                 if "Build_year" in target:
                     try:
                         build_year = int(target["Build_year"])
                     except (ValueError, TypeError):
                         build_year = None
+
+                # Extract elevator information
+                if "Extras_types" in target:
+                    extras = target.get("Extras_types", [])
+                    elevator = "lift" in extras
+
+                # Extract floor
+                if "Floor_no" in target and target["Floor_no"]:
+                    try:
+                        floor = target["Floor_no"][0]
+                    except (IndexError, TypeError):
+                        floor = "brak informacji"
+
+                # Extract other information
+                market = target.get("Market", market)
+                heating = target.get("Heating", heating)
+                state = target.get("Construction_status", state)
 
             # Additional characteristics from characteristics array
             characteristics = ad_data.get("characteristics", [])
@@ -181,29 +221,10 @@ def extract_data(url: str, soup: BeautifulSoup) -> RealEstateListing:
                     key = str(char.get("key", "")).lower()
                     value = char.get("value")
 
-                    if "powierzchnia" in key and not area:
-                        area = extract_number(str(value))
-                    elif (
-                        "liczba pokoi" in key or "pokoje" in key
-                    ) and rooms == "brak informacji":
-                        rooms = value
-                    elif "ogrzewanie" in key and heating == "brak informacji":
-                        heating = value
-                    elif "piętro" in key and floor == "brak informacji":
-                        floor = value
-                    elif "czynsz" in key:
+                    if "czynsz" in key:
                         rent = extract_number(str(value))
-                    elif "stan wykończenia" in key and state == "brak informacji":
-                        state = value
-                    elif "rynek" in key and market == "brak informacji":
-                        market = value
                     elif "forma własności" in key:
                         ownership = value
-                    elif "rok budowy" in key and not build_year:
-                        try:
-                            build_year = int(str(value))
-                        except (ValueError, TypeError):
-                            build_year = None
 
             # Extract features and additional information
             features = []
@@ -218,14 +239,6 @@ def extract_data(url: str, soup: BeautifulSoup) -> RealEstateListing:
                             if isinstance(f, dict)
                         ]
                     )
-                    # Check for elevator in features
-                    for feature in category_features:
-                        if (
-                            isinstance(feature, dict)
-                            and "winda" in str(feature.get("label", "")).lower()
-                        ):
-                            elevator = True
-                            break
 
             features_without_category = ad_data.get("featuresWithoutCategory", [])
             features.extend(
@@ -235,14 +248,6 @@ def extract_data(url: str, soup: BeautifulSoup) -> RealEstateListing:
                     if isinstance(f, dict)
                 ]
             )
-            # Check for elevator in uncategorized features
-            for feature in features_without_category:
-                if (
-                    isinstance(feature, dict)
-                    and "winda" in str(feature.get("label", "")).lower()
-                ):
-                    elevator = True
-                    break
 
             additional_info = ad_data.get("additionalInformation", [])
             features.extend(
@@ -284,7 +289,7 @@ def extract_data(url: str, soup: BeautifulSoup) -> RealEstateListing:
         return RealEstateListing.create_empty(url)
 
 
-def get_one_search_page(n: int) -> pd.DataFrame:
+def get_one_search_page(n: int, debug: bool = False) -> pd.DataFrame:
     """Get all listings from a single search page and return them as a DataFrame."""
     links = get_links_for_search_page(n)
     data_list = []
@@ -292,7 +297,7 @@ def get_one_search_page(n: int) -> pd.DataFrame:
         print(f"Checking {link}")
         try:
             soup = load_page(link)
-            data = extract_data(link, soup)
+            data = extract_data(link, soup, debug=debug)
             data_list.append(data)
         except Exception as e:
             print(f"Failed to process {link}: {str(e)}")
@@ -306,12 +311,12 @@ def get_one_search_page(n: int) -> pd.DataFrame:
     return df
 
 
-def get_n_pages(n: int, offset: int = 0) -> pd.DataFrame:
+def get_n_pages(n: int, offset: int = 0, debug: bool = False) -> pd.DataFrame:
     """Get listings from multiple pages and combine them into a single DataFrame."""
     df = pd.DataFrame()
     for i in range(offset, offset + n):
         print(f"\nProcessing page {i + 1} of {offset + n}")
-        page_df = get_one_search_page(i)
+        page_df = get_one_search_page(i, debug=debug)
         if not page_df.empty:
             df = pd.concat([df, page_df], ignore_index=False)
         else:

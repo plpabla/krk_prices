@@ -17,6 +17,11 @@ def create_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--offset", type=int, default=0, help="page number to start from (default: 0)"
     )
+    parser.add_argument(
+        "--debug",
+        action="store_true",
+        help="enable debug mode (saves raw JSON data for each listing)",
+    )
     return parser
 
 
@@ -27,8 +32,10 @@ def main():
 
     print(f"Starting scraping {args.pages} page(s) from OtoDom...")
     print(f"Results will be saved to {args.output}")
+    if args.debug:
+        print("Debug mode enabled - raw JSON data will be saved to logs/")
 
-    df = get_n_pages(args.pages, args.offset)
+    df = get_n_pages(args.pages, args.offset, debug=args.debug)
 
     if df.empty:
         print(

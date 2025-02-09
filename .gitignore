@@ -1,5 +1,6 @@
 venv/
 .vscode/
+**/logs/**
 
 *.csv
 *.ipynb_checkpoints/
