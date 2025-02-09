@@ -1,11 +1,9 @@
 import requests
 from bs4 import BeautifulSoup
 import pandas as pd
-import argparse
 import re
 from typing import Optional, Dict, Any
-from .data_types import RealEstateListing
-from .scraping_utils import get_n_pages
+from scrapper.data_types import RealEstateListing
 
 BASE_URL = "https://www.otodom.pl"
 SEARCH_URL = (
@@ -15,6 +13,7 @@ SEARCH_URL = (
 
 
 def load_page(url: str) -> BeautifulSoup:
+    """Load and parse a webpage."""
     res = requests.get(url, headers={"User-Agent": "Mozilla/5.0"})
     res.raise_for_status()
     soup = BeautifulSoup(res.text, "html.parser")
@@ -22,6 +21,7 @@ def load_page(url: str) -> BeautifulSoup:
 
 
 def get_links_for_search_page(n: int) -> list[str]:
+    """Get all listing links from a search results page."""
     url = SEARCH_URL + str(n)
     soup = load_page(url)
     script_tag = soup.find("script", {"id": "__NEXT_DATA__"})
@@ -32,7 +32,7 @@ def get_links_for_search_page(n: int) -> list[str]:
         json_data = json.loads(script_tag.string)
         listings = json_data["props"]["pageProps"]["data"]["searchAds"]["items"]
         links = [f"{BASE_URL}/pl/oferta/{listing['slug']}" for listing in listings]
-    return links
+        return links
     return []
 
 
@@ -103,23 +103,7 @@ def extract_data(url: str, soup: BeautifulSoup) -> RealEstateListing:
 
             if not ad_data:
                 print(f"Warning: Could not find ad data in JSON for {url}")
-                return RealEstateListing(
-                    slug=url.split("/")[-1],
-                    url=url,
-                    name="brak informacji",
-                    price=None,
-                    area=None,
-                    rooms="brak informacji",
-                    heating="brak informacji",
-                    floor="brak informacji",
-                    rent=None,
-                    state="brak informacji",
-                    market="brak informacji",
-                    ownership="brak informacji",
-                    available="brak informacji",
-                    ad_type="brak informacji",
-                    extra_info="brak informacji",
-                )
+                return RealEstateListing.create_empty(url)
 
             # Initialize data with default values
             price = None
@@ -131,6 +115,8 @@ def extract_data(url: str, soup: BeautifulSoup) -> RealEstateListing:
             state = "brak informacji"
             market = "brak informacji"
             ownership = "brak informacji"
+            build_year = None
+            elevator = False
 
             # Extract basic information
             name = ad_data.get("title", "brak informacji")
@@ -163,6 +149,12 @@ def extract_data(url: str, soup: BeautifulSoup) -> RealEstateListing:
                 heating = target.get("Heating", heating)
                 floor = target.get("Floor_no", floor)
                 state = target.get("Construction_status", state)
+                # Try to get build year from target data
+                if "Build_year" in target:
+                    try:
+                        build_year = int(target["Build_year"])
+                    except (ValueError, TypeError):
+                        build_year = None
 
             # Additional characteristics from characteristics array
             characteristics = ad_data.get("characteristics", [])
@@ -189,6 +181,11 @@ def extract_data(url: str, soup: BeautifulSoup) -> RealEstateListing:
                         market = value
                     elif "forma własności" in key:
                         ownership = value
+                    elif "rok budowy" in key and not build_year:
+                        try:
+                            build_year = int(str(value))
+                        except (ValueError, TypeError):
+                            build_year = None
 
             # Extract features and additional information
             features = []
@@ -203,6 +200,14 @@ def extract_data(url: str, soup: BeautifulSoup) -> RealEstateListing:
                             if isinstance(f, dict)
                         ]
                     )
+                    # Check for elevator in features
+                    for feature in category_features:
+                        if (
+                            isinstance(feature, dict)
+                            and "winda" in str(feature.get("label", "")).lower()
+                        ):
+                            elevator = True
+                            break
 
             features_without_category = ad_data.get("featuresWithoutCategory", [])
             features.extend(
@@ -212,6 +217,14 @@ def extract_data(url: str, soup: BeautifulSoup) -> RealEstateListing:
                     if isinstance(f, dict)
                 ]
             )
+            # Check for elevator in uncategorized features
+            for feature in features_without_category:
+                if (
+                    isinstance(feature, dict)
+                    and "winda" in str(feature.get("label", "")).lower()
+                ):
+                    elevator = True
+                    break
 
             additional_info = ad_data.get("additionalInformation", [])
             features.extend(
@@ -231,6 +244,8 @@ def extract_data(url: str, soup: BeautifulSoup) -> RealEstateListing:
                 price=price,
                 area=area,
                 rooms=rooms,
+                build_year=build_year,
+                elevator=elevator,
                 heating=heating,
                 floor=floor,
                 rent=rent,
@@ -247,63 +262,39 @@ def extract_data(url: str, soup: BeautifulSoup) -> RealEstateListing:
         import traceback
 
         print("Traceback:", traceback.format_exc())
-
-        return RealEstateListing(
-            slug=url.split("/")[-1],
-            url=url,
-            name="brak informacji",
-            price=None,
-            area=None,
-            rooms="brak informacji",
-            heating="brak informacji",
-            floor="brak informacji",
-            rent=None,
-            state="brak informacji",
-            market="brak informacji",
-            ownership="brak informacji",
-            available="brak informacji",
-            ad_type="brak informacji",
-            extra_info="brak informacji",
-        )
+        return RealEstateListing.create_empty(url)
 
 
-def create_parser() -> argparse.ArgumentParser:
-    """Create argument parser for the scraper script."""
-    parser = argparse.ArgumentParser(description="Scrape real estate data from OtoDom.")
-    parser.add_argument(
-        "--output",
-        type=str,
-        default="otodom.csv",
-        help="output file name (default: otodom.csv)",
-    )
-    parser.add_argument(
-        "--pages", type=int, default=1, help="number of pages to scrape (default: 1)"
-    )
-    parser.add_argument(
-        "--offset", type=int, default=0, help="page number to start from (default: 0)"
-    )
-    return parser
+def get_one_search_page(n: int) -> pd.DataFrame:
+    """Get all listings from a single search page and return them as a DataFrame."""
+    links = get_links_for_search_page(n)
+    data_list = []
+    for link in links:
+        print(f"Checking {link}")
+        try:
+            soup = load_page(link)
+            data = extract_data(link, soup)
+            data_list.append(data)
+        except Exception as e:
+            print(f"Failed to process {link}: {str(e)}")
+            continue
+
+    if not data_list:
+        return pd.DataFrame()
+
+    df = pd.DataFrame(data_list)
+    df.set_index("slug", inplace=True)
+    return df
 
 
-def main():
-    parser = create_parser()
-    args = parser.parse_args()
-
-    print(f"Starting scraping {args.pages} page(s) from OtoDom...")
-    print(f"Results will be saved to {args.output}")
-
-    df = get_n_pages(args.pages, args.offset)
-
-    if df.empty:
-        print(
-            "\nNo data was collected. Please check if the website structure has changed."
-        )
-        return
-
-    df.to_csv(args.output)
-    print(f"\nScraping completed. Found {len(df)} listings.")
-    print(f"Data saved to {args.output}")
-
-
-if __name__ == "__main__":
-    main()
+def get_n_pages(n: int, offset: int = 0) -> pd.DataFrame:
+    """Get listings from multiple pages and combine them into a single DataFrame."""
+    df = pd.DataFrame()
+    for i in range(offset, offset + n):
+        print(f"\nProcessing page {i + 1} of {offset + n}")
+        page_df = get_one_search_page(i)
+        if not page_df.empty:
+            df = pd.concat([df, page_df], ignore_index=False)
+        else:
+            print(f"No data found on page {i + 1}")
+    return df
