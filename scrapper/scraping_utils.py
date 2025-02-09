@@ -150,6 +150,8 @@ def extract_data(
             build_year = None
             elevator = False
             location = []
+            location_lat = None
+            location_lon = None
 
             # Extract basic information
             name = ad_data.get("title", "brak informacji")
@@ -162,6 +164,17 @@ def extract_data(
                 if location_text:
                     # Split by comma and strip whitespace
                     location = [part.strip() for part in location_text.split(",")]
+
+            # Extract location coordinates
+            location_data = ad_data.get("location", {})
+            coordinates = location_data.get("coordinates", {})
+            if coordinates:
+                try:
+                    location_lat = float(coordinates.get("latitude"))
+                    location_lon = float(coordinates.get("longitude"))
+                except (ValueError, TypeError):
+                    location_lat = None
+                    location_lon = None
 
             # Extract data from target
             target = ad_data.get("target", {})
@@ -270,6 +283,8 @@ def extract_data(
                 build_year=build_year,
                 elevator=elevator,
                 location=location,
+                location_lat=location_lat,
+                location_lon=location_lon,
                 heating=heating,
                 floor=floor,
                 rent=rent,

@@ -21,6 +21,8 @@ class RealEstateListing:
     build_year: Optional[int]  # Year of construction
     elevator: bool  # Whether the building has an elevator
     location: List[str]  # Location components (district, area, etc.)
+    location_lat: Optional[float]  # Latitude coordinate
+    location_lon: Optional[float]  # Longitude coordinate
 
     # Property characteristics
     heating: str
@@ -55,6 +57,8 @@ class RealEstateListing:
             build_year=None,
             elevator=False,
             location=[],
+            location_lat=None,
+            location_lon=None,
             heating=cls.MISSING_INFO,
             floor=cls.MISSING_INFO,
             rent=None,
