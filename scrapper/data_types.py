@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Optional, ClassVar
+from typing import Optional, ClassVar, List
 
 
 @dataclass
@@ -20,6 +20,7 @@ class RealEstateListing:
     rooms: str
     build_year: Optional[int]  # Year of construction
     elevator: bool  # Whether the building has an elevator
+    location: List[str]  # Location components (district, area, etc.)
 
     # Property characteristics
     heating: str
@@ -53,6 +54,7 @@ class RealEstateListing:
             rooms=cls.MISSING_INFO,
             build_year=None,
             elevator=False,
+            location=[],
             heating=cls.MISSING_INFO,
             floor=cls.MISSING_INFO,
             rent=None,

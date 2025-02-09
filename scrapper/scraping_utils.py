@@ -117,20 +117,38 @@ def extract_data(url: str, soup: BeautifulSoup) -> RealEstateListing:
             ownership = "brak informacji"
             build_year = None
             elevator = False
+            location = []
 
             # Extract basic information
             name = ad_data.get("title", "brak informacji")
 
-            # Price extraction from topInformation
-            top_info = ad_data.get("topInformation", [])
-            for info in top_info:
-                if isinstance(info, dict):
-                    label = str(info.get("label", "")).lower()
-                    if "cena" in label or "price" in label:
-                        price = extract_number(str(info.get("value", 0)))
-                        break
+            # Extract location from map link
+            map_link = soup.find("a", href="#map")
+            if map_link:
+                # Get only the text content, ignoring SVG and other elements
+                location_text = "".join(text for text in map_link.stripped_strings)
+                if location_text:
+                    # Split by comma and strip whitespace
+                    location = [part.strip() for part in location_text.split(",")]
+
+            # Try to extract price using aria-label first
+            price_element = soup.find(attrs={"aria-label": "Cena"})
+            if price_element:
+                price = extract_number(price_element.text)
+
+            # If aria-label method failed, try the JSON data
+            if not price:
+                # Price extraction from topInformation
+                top_info = ad_data.get("topInformation", [])
+                for info in top_info:
+                    if isinstance(info, dict):
+                        label = str(info.get("label", "")).lower()
+                        if "cena" in label or "price" in label:
+                            price = extract_number(str(info.get("value", 0)))
+                            break
 
             # Area and rooms extraction from topInformation
+            top_info = ad_data.get("topInformation", [])
             for info in top_info:
                 if isinstance(info, dict):
                     label = str(info.get("label", "")).lower()
@@ -246,6 +264,7 @@ def extract_data(url: str, soup: BeautifulSoup) -> RealEstateListing:
                 rooms=rooms,
                 build_year=build_year,
                 elevator=elevator,
+                location=location,
                 heating=heating,
                 floor=floor,
                 rent=rent,
