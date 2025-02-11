@@ -14,7 +14,7 @@
 
 # Run scrapper
 
-From project root directory
+From **project root directory**
 
     $ python -m scrapper
 
