@@ -11,7 +11,7 @@ CITY = "krakow"
 SEARCH_URL = f"{BASE_URL}/pl/wyniki/sprzedaz/mieszkanie/malopolskie/{CITY}/{CITY}/{CITY}?viewType=listing&page="
 
 
-def extract_json_from_script(
+def _extract_json_from_script(
     soup: BeautifulSoup, script_id: str = "__NEXT_DATA__"
 ) -> Optional[Dict]:
     """Extract JSON data from a script tag.
@@ -33,7 +33,7 @@ def extract_json_from_script(
         return None
 
 
-def load_page(url: str) -> BeautifulSoup:
+def _load_page(url: str) -> BeautifulSoup:
     """Load and parse a webpage."""
     res = requests.get(url, headers={"User-Agent": "Mozilla/5.0"})
     res.raise_for_status()
@@ -41,41 +41,7 @@ def load_page(url: str) -> BeautifulSoup:
     return soup
 
 
-def get_links_for_search_page(n: int) -> list[str]:
-    """Get all listing links from a search results page."""
-    url = SEARCH_URL + str(n)
-    soup = load_page(url)
-    json_data = extract_json_from_script(soup)
-
-    if json_data:
-        try:
-            listings = json_data["props"]["pageProps"]["data"]["searchAds"]["items"]
-            return [f"{BASE_URL}/pl/oferta/{listing['slug']}" for listing in listings]
-        except KeyError as e:
-            print(f"Error accessing listing data: {str(e)}")
-    return []
-
-
-def safe_extract(
-    soup: BeautifulSoup,
-    selector: dict,
-    attribute: Optional[str] = None,
-    default: str = "brak informacji",
-) -> str:
-    """Safely extract data from BeautifulSoup object with fallbacks"""
-    try:
-        element = soup.find(**selector)
-        if element is None:
-            return default
-        if attribute:
-            return element.get(attribute, default)
-        return element.text.strip()
-    except Exception as e:
-        print(f"Error extracting with selector {selector}: {str(e)}")
-        return default
-
-
-def extract_number(text: str) -> Optional[float]:
+def _extract_number(text: str) -> Optional[float]:
     """Extract number from text, handling various formats"""
     try:
         # Remove currency symbols, spaces, and convert commas to dots
@@ -89,28 +55,7 @@ def extract_number(text: str) -> Optional[float]:
         return None
 
 
-def find_info_row(soup: BeautifulSoup, label: str) -> str:
-    """Find information row by label text"""
-    try:
-        elements = soup.find_all(["div", "span", "p"])
-        for element in elements:
-            if label.lower() in element.text.strip().lower():
-                # Try to find the value in the next sibling or parent's next sibling
-                next_element = element.find_next_sibling()
-                if next_element:
-                    return next_element.text.strip()
-                parent_next = element.parent.find_next_sibling()
-                if parent_next:
-                    return parent_next.text.strip()
-                # If no siblings found, return the parent's text excluding the label
-                parent_text = element.parent.text.strip()
-                return parent_text.replace(label, "").strip()
-    except Exception as e:
-        print(f"Error finding info row for {label}: {str(e)}")
-    return "brak informacji"
-
-
-def save_ad_data_to_file(url: str, ad_data: dict) -> None:
+def _save_ad_data_to_file(url: str, ad_data: dict) -> None:
     """Save ad data as formatted JSON for analysis purposes.
 
     Args:
@@ -135,12 +80,27 @@ def save_ad_data_to_file(url: str, ad_data: dict) -> None:
         print(f"Error saving ad_data to file: {str(e)}")
 
 
+def get_links_for_search_page(n: int) -> list[str]:
+    """Get all listing links from a search results page."""
+    url = SEARCH_URL + str(n)
+    soup = _load_page(url)
+    json_data = _extract_json_from_script(soup)
+
+    if json_data:
+        try:
+            listings = json_data["props"]["pageProps"]["data"]["searchAds"]["items"]
+            return [f"{BASE_URL}/pl/oferta/{listing['slug']}" for listing in listings]
+        except KeyError as e:
+            print(f"Error accessing listing data: {str(e)}")
+    return []
+
+
 def extract_data(
     url: str, soup: BeautifulSoup, debug: bool = False
 ) -> RealEstateListing:
     """Extract data from a listing page and return a RealEstateListing instance"""
     try:
-        json_data = extract_json_from_script(soup)
+        json_data = _extract_json_from_script(soup)
         if not json_data:
             print(f"Warning: Could not extract JSON data from {url}")
             return RealEstateListing.create_empty(url)
@@ -149,7 +109,7 @@ def extract_data(
 
         # Save the ad data if in debug mode
         if debug:
-            save_ad_data_to_file(url, ad_data)
+            _save_ad_data_to_file(url, ad_data)
 
         if not ad_data:
             print(f"Warning: Could not find ad data in JSON for {url}")
@@ -205,7 +165,7 @@ def extract_data(
                     # Fallback to aria-label method
                     price_element = soup.find(attrs={"aria-label": "Cena"})
                     if price_element:
-                        price = extract_number(price_element.text)
+                        price = _extract_number(price_element.text)
 
             # Extract area
             if "Area" in target:
@@ -253,7 +213,7 @@ def extract_data(
                 value = char.get("value")
 
                 if "czynsz" in key:
-                    rent = extract_number(str(value))
+                    rent = _extract_number(str(value))
                 elif "forma własności" in key:
                     ownership = value
 
@@ -329,7 +289,7 @@ def get_one_search_page(n: int, debug: bool = False) -> pd.DataFrame:
     for link in links:
         print(f"Checking {link}")
         try:
-            soup = load_page(link)
+            soup = _load_page(link)
             data = extract_data(link, soup, debug=debug)
             data_list.append(data)
         except Exception as e:
