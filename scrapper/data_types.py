@@ -19,7 +19,7 @@ class RealEstateListing:
     area: Optional[float]
     rooms: str
     build_year: Optional[int]  # Year of construction
-    elevator: bool  # Whether the building has an elevator
+    utilities: List[str]  # List of available utilities (elevator, etc.)
     location: List[str]  # Location components (district, area, etc.)
     location_lat: Optional[float]  # Latitude coordinate
     location_lon: Optional[float]  # Longitude coordinate
@@ -55,7 +55,7 @@ class RealEstateListing:
             area=None,
             rooms=cls.MISSING_INFO,
             build_year=None,
-            elevator=False,
+            utilities=[],
             location=[],
             location_lat=None,
             location_lon=None,
