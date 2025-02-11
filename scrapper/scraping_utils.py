@@ -2,14 +2,35 @@ import requests
 from bs4 import BeautifulSoup
 import pandas as pd
 import re
+import json
 from typing import Optional, Dict, Any
 from scrapper.data_types import RealEstateListing
 
 BASE_URL = "https://www.otodom.pl"
-SEARCH_URL = (
-    BASE_URL
-    + "/pl/wyniki/sprzedaz/mieszkanie/malopolskie/krakow/krakow/krakow?viewType=listing&page="
-)
+CITY = "krakow"
+SEARCH_URL = f"{BASE_URL}/pl/wyniki/sprzedaz/mieszkanie/malopolskie/{CITY}/{CITY}/{CITY}?viewType=listing&page="
+
+
+def extract_json_from_script(
+    soup: BeautifulSoup, script_id: str = "__NEXT_DATA__"
+) -> Optional[Dict]:
+    """Extract JSON data from a script tag.
+
+    Args:
+        soup: BeautifulSoup object containing the page content
+        script_id: ID of the script tag containing JSON data
+
+    Returns:
+        Parsed JSON data as a dictionary or None if extraction fails
+    """
+    try:
+        script_tag = soup.find("script", {"id": script_id})
+        if not script_tag or not script_tag.string:
+            return None
+        return json.loads(script_tag.string)
+    except (json.JSONDecodeError, AttributeError) as e:
+        print(f"Error extracting JSON from script tag: {str(e)}")
+        return None
 
 
 def load_page(url: str) -> BeautifulSoup:
@@ -24,15 +45,14 @@ def get_links_for_search_page(n: int) -> list[str]:
     """Get all listing links from a search results page."""
     url = SEARCH_URL + str(n)
     soup = load_page(url)
-    script_tag = soup.find("script", {"id": "__NEXT_DATA__"})
+    json_data = extract_json_from_script(soup)
 
-    if script_tag:
-        import json
-
-        json_data = json.loads(script_tag.string)
-        listings = json_data["props"]["pageProps"]["data"]["searchAds"]["items"]
-        links = [f"{BASE_URL}/pl/oferta/{listing['slug']}" for listing in listings]
-        return links
+    if json_data:
+        try:
+            listings = json_data["props"]["pageProps"]["data"]["searchAds"]["items"]
+            return [f"{BASE_URL}/pl/oferta/{listing['slug']}" for listing in listings]
+        except KeyError as e:
+            print(f"Error accessing listing data: {str(e)}")
     return []
 
 
@@ -98,7 +118,6 @@ def save_ad_data_to_file(url: str, ad_data: dict) -> None:
         ad_data: The ad data dictionary to save
     """
     try:
-        import json
         from pathlib import Path
 
         # Create logs directory if it doesn't exist
@@ -121,180 +140,179 @@ def extract_data(
 ) -> RealEstateListing:
     """Extract data from a listing page and return a RealEstateListing instance"""
     try:
-        # Extract JSON data from script tag
-        script_tag = soup.find("script", {"id": "__NEXT_DATA__"})
-        if script_tag:
-            import json
+        json_data = extract_json_from_script(soup)
+        if not json_data:
+            print(f"Warning: Could not extract JSON data from {url}")
+            return RealEstateListing.create_empty(url)
 
-            json_data = json.loads(script_tag.string)
-            ad_data = json_data.get("props", {}).get("pageProps", {}).get("ad", {})
+        ad_data = json_data.get("props", {}).get("pageProps", {}).get("ad", {})
 
-            # Save the ad data if in debug mode
-            if debug:
-                save_ad_data_to_file(url, ad_data)
+        # Save the ad data if in debug mode
+        if debug:
+            save_ad_data_to_file(url, ad_data)
 
-            if not ad_data:
-                print(f"Warning: Could not find ad data in JSON for {url}")
-                return RealEstateListing.create_empty(url)
+        if not ad_data:
+            print(f"Warning: Could not find ad data in JSON for {url}")
+            return RealEstateListing.create_empty(url)
 
-            # Initialize data with default values
-            price = None
-            area = None
-            rooms = "brak informacji"
-            heating = "brak informacji"
-            floor = "brak informacji"
-            rent = None
-            state = "brak informacji"
-            market = "brak informacji"
-            ownership = "brak informacji"
-            build_year = None
-            elevator = False
-            location = []
-            location_lat = None
-            location_lon = None
+        # Initialize data with default values
+        price = None
+        area = None
+        rooms = "brak informacji"
+        heating = "brak informacji"
+        floor = "brak informacji"
+        rent = None
+        state = "brak informacji"
+        market = "brak informacji"
+        ownership = "brak informacji"
+        build_year = None
+        elevator = False
+        location = []
+        location_lat = None
+        location_lon = None
 
-            # Extract basic information
-            name = ad_data.get("title", "brak informacji")
+        # Extract basic information
+        name = ad_data.get("title", "brak informacji")
 
-            # Extract location from map link
-            map_link = soup.find("a", href="#map")
-            if map_link:
-                # Get only the text content, ignoring SVG and other elements
-                location_text = "".join(text for text in map_link.stripped_strings)
-                if location_text:
-                    # Split by comma and strip whitespace
-                    location = [part.strip() for part in location_text.split(",")]
+        # Extract location from map link
+        map_link = soup.find("a", href="#map")
+        if map_link:
+            # Get only the text content, ignoring SVG and other elements
+            location_text = "".join(text for text in map_link.stripped_strings)
+            if location_text:
+                # Split by comma and strip whitespace
+                location = [part.strip() for part in location_text.split(",")]
 
-            # Extract location coordinates
-            location_data = ad_data.get("location", {})
-            coordinates = location_data.get("coordinates", {})
-            if coordinates:
+        # Extract location coordinates
+        location_data = ad_data.get("location", {})
+        coordinates = location_data.get("coordinates", {})
+        if coordinates:
+            try:
+                location_lat = float(coordinates.get("latitude"))
+                location_lon = float(coordinates.get("longitude"))
+            except (ValueError, TypeError):
+                location_lat = None
+                location_lon = None
+
+        # Extract data from target
+        target = ad_data.get("target", {})
+        if target:
+            # Extract price
+            if "Price" in target:
                 try:
-                    location_lat = float(coordinates.get("latitude"))
-                    location_lon = float(coordinates.get("longitude"))
+                    price = float(target["Price"])
                 except (ValueError, TypeError):
-                    location_lat = None
-                    location_lon = None
+                    # Fallback to aria-label method
+                    price_element = soup.find(attrs={"aria-label": "Cena"})
+                    if price_element:
+                        price = extract_number(price_element.text)
 
-            # Extract data from target
-            target = ad_data.get("target", {})
-            if target:
-                # Extract price
-                if "Price" in target:
-                    try:
-                        price = float(target["Price"])
-                    except (ValueError, TypeError):
-                        # Fallback to aria-label method
-                        price_element = soup.find(attrs={"aria-label": "Cena"})
-                        if price_element:
-                            price = extract_number(price_element.text)
+            # Extract area
+            if "Area" in target:
+                try:
+                    area = float(target["Area"])
+                except (ValueError, TypeError):
+                    area = None
 
-                # Extract area
-                if "Area" in target:
-                    try:
-                        area = float(target["Area"])
-                    except (ValueError, TypeError):
-                        area = None
+            # Extract rooms
+            if "Rooms_num" in target and target["Rooms_num"]:
+                try:
+                    rooms = target["Rooms_num"][0]
+                except (IndexError, TypeError):
+                    rooms = "brak informacji"
 
-                # Extract rooms
-                if "Rooms_num" in target and target["Rooms_num"]:
-                    try:
-                        rooms = target["Rooms_num"][0]
-                    except (IndexError, TypeError):
-                        rooms = "brak informacji"
+            # Extract build year
+            if "Build_year" in target:
+                try:
+                    build_year = int(target["Build_year"])
+                except (ValueError, TypeError):
+                    build_year = None
 
-                # Extract build year
-                if "Build_year" in target:
-                    try:
-                        build_year = int(target["Build_year"])
-                    except (ValueError, TypeError):
-                        build_year = None
+            # Extract elevator information
+            if "Extras_types" in target:
+                extras = target.get("Extras_types", [])
+                elevator = "lift" in extras
 
-                # Extract elevator information
-                if "Extras_types" in target:
-                    extras = target.get("Extras_types", [])
-                    elevator = "lift" in extras
+            # Extract floor
+            if "Floor_no" in target and target["Floor_no"]:
+                try:
+                    floor = target["Floor_no"][0]
+                except (IndexError, TypeError):
+                    floor = "brak informacji"
 
-                # Extract floor
-                if "Floor_no" in target and target["Floor_no"]:
-                    try:
-                        floor = target["Floor_no"][0]
-                    except (IndexError, TypeError):
-                        floor = "brak informacji"
+            # Extract other information
+            market = target.get("Market", market)
+            heating = target.get("Heating", heating)
+            state = target.get("Construction_status", state)
 
-                # Extract other information
-                market = target.get("Market", market)
-                heating = target.get("Heating", heating)
-                state = target.get("Construction_status", state)
+        # Additional characteristics from characteristics array
+        characteristics = ad_data.get("characteristics", [])
+        for char in characteristics:
+            if isinstance(char, dict):
+                key = str(char.get("key", "")).lower()
+                value = char.get("value")
 
-            # Additional characteristics from characteristics array
-            characteristics = ad_data.get("characteristics", [])
-            for char in characteristics:
-                if isinstance(char, dict):
-                    key = str(char.get("key", "")).lower()
-                    value = char.get("value")
+                if "czynsz" in key:
+                    rent = extract_number(str(value))
+                elif "forma własności" in key:
+                    ownership = value
 
-                    if "czynsz" in key:
-                        rent = extract_number(str(value))
-                    elif "forma własności" in key:
-                        ownership = value
+        # Extract features and additional information
+        features = []
+        features_by_category = ad_data.get("featuresByCategory", [])
+        for category in features_by_category:
+            if isinstance(category, dict):
+                category_features = category.get("features", [])
+                features.extend(
+                    [
+                        f.get("label", "")
+                        for f in category_features
+                        if isinstance(f, dict)
+                    ]
+                )
 
-            # Extract features and additional information
-            features = []
-            features_by_category = ad_data.get("featuresByCategory", [])
-            for category in features_by_category:
-                if isinstance(category, dict):
-                    category_features = category.get("features", [])
-                    features.extend(
-                        [
-                            f.get("label", "")
-                            for f in category_features
-                            if isinstance(f, dict)
-                        ]
-                    )
+        features_without_category = ad_data.get("featuresWithoutCategory", [])
+        features.extend(
+            [
+                f.get("label", "")
+                for f in features_without_category
+                if isinstance(f, dict)
+            ]
+        )
 
-            features_without_category = ad_data.get("featuresWithoutCategory", [])
-            features.extend(
-                [
-                    f.get("label", "")
-                    for f in features_without_category
-                    if isinstance(f, dict)
-                ]
-            )
+        additional_info = ad_data.get("additionalInformation", [])
+        features.extend(
+            [
+                info.get("value", "")
+                for info in additional_info
+                if isinstance(info, dict)
+            ]
+        )
 
-            additional_info = ad_data.get("additionalInformation", [])
-            features.extend(
-                [
-                    info.get("value", "")
-                    for info in additional_info
-                    if isinstance(info, dict)
-                ]
-            )
+        extra_info = ", ".join(filter(None, features)) or "brak informacji"
 
-            extra_info = ", ".join(filter(None, features)) or "brak informacji"
-
-            return RealEstateListing(
-                slug=url.split("/")[-1],
-                url=url,
-                name=name,
-                price=price,
-                area=area,
-                rooms=rooms,
-                build_year=build_year,
-                elevator=elevator,
-                location=location,
-                location_lat=location_lat,
-                location_lon=location_lon,
-                heating=heating,
-                floor=floor,
-                rent=rent,
-                state=state,
-                market=market,
-                ownership=ownership,
-                available="brak informacji",  # This field might not be available anymore
-                ad_type=ad_data.get("advertiserType", "brak informacji"),
-                extra_info=extra_info,
-            )
+        return RealEstateListing(
+            slug=url.split("/")[-1],
+            url=url,
+            name=name,
+            price=price,
+            area=area,
+            rooms=rooms,
+            build_year=build_year,
+            elevator=elevator,
+            location=location,
+            location_lat=location_lat,
+            location_lon=location_lon,
+            heating=heating,
+            floor=floor,
+            rent=rent,
+            state=state,
+            market=market,
+            ownership=ownership,
+            available="brak informacji",  # This field might not be available anymore
+            ad_type=ad_data.get("advertiserType", "brak informacji"),
+            extra_info=extra_info,
+        )
 
     except Exception as e:
         print(f"Error processing {url}: {str(e)}")
