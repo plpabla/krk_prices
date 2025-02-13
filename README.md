@@ -1,8 +1,6 @@
 # Setup - scrapper
 
-    $ cd scrapper
-
-## Create venv
+## Create venv (if not created)
 
     $ python -m venv venv
 
@@ -13,3 +11,13 @@
 ## Install dependencies
 
     (venv)$ pip install -r requirements.txt
+
+# Run scrapper
+
+From **project root directory**
+
+    $ python -m scrapper
+
+By default, 1 page is scrapped. To get more:
+
+    $ python -m scrapper --pages 10

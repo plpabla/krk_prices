@@ -1,7 +1,9 @@
 venv/
 .vscode/
+**/logs/**
 
 *.csv
+!otodom.csv
 *.ipynb_checkpoints/
 *~
 
@@ -10,6 +12,7 @@ venv/
 __pycache__/
 *.py[cod]
 *$py.class
+**/package-lock.json
 
 # C extensions
 *.so
