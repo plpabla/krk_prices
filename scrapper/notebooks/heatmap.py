@@ -5,6 +5,9 @@ import matplotlib.colors as colors
 import numpy as np
 from scipy.stats import gaussian_kde
 
+# Settings
+POINTS = 200
+
 # Load the data
 data = pd.read_csv("../../otodom.csv")
 bg = "./krk.png"
@@ -31,7 +34,6 @@ ax.imshow(
 )
 
 # Create a grid of points
-POINTS = 200
 x_min, x_max = bg_coord[0][1], bg_coord[1][1]
 y_min, y_max = bg_coord[1][0], bg_coord[0][0]
 x_grid, y_grid = np.mgrid[x_min : x_max : POINTS * 1j, y_min : y_max : POINTS * 1j]
