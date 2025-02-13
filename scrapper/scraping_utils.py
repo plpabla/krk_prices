@@ -126,6 +126,21 @@ def extract_data(
             .get("locations", {})[-1]
             .get("fullNameItems", [])
         )
+        location_lat = (
+            ad_data.get("location", {}).get("coordinates", {}).get("latitude", None)
+        )
+        location_lon = (
+            ad_data.get("location", {}).get("coordinates", {}).get("longitude", None)
+        )
+
+        available = None
+        extra_info = ad_data.get("additionalInformation", None)
+        if extra_info:
+            for item in extra_info:
+                if item.get("label") == "free_from":
+                    values = item.get("values", [None])
+                    if values:
+                        available = values[0]
 
         return RealEstateListing(
             slug=url.split("/")[-1],
@@ -137,19 +152,16 @@ def extract_data(
             build_year=ad_data.get("target", {}).get("Build_year", None),
             utilities=ad_data.get("features", []),
             location=location,
-            location_lat=ad_data.get("location", {})
-            .get("coordinates", {})
-            .get("latitude", None),
-            location_lon=ad_data.get("location", {})
-            .get("coordinates", {})
-            .get("longitude", None),
+            location_lat=location_lat,
+            location_lon=location_lon,
             heating=ad_data.get("target", {}).get("Heating", [None])[0],
             floor=ad_data.get("target", {}).get("Floor_no", [None])[0],
-            rent="todo",
-            state="todo",
-            market="todo",
-            ownership="todo",
-            available="todo",
+            building_floors=ad_data.get("target", {}).get("Building_floors_num", None),
+            rent=ad_data.get("target", {}).get("Rent", None),
+            state=ad_data.get("target", {}).get("Construction_status", [None])[0],
+            market=ad_data.get("target", {}).get("MarketType", None),
+            ownership=ad_data.get("target", {}).get("Building_ownership", [None])[0],
+            available=available,
             ad_type=ad_data.get("advertiserType", "brak informacji"),
             extra_info="todo",
         )

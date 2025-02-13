@@ -10,6 +10,9 @@ data = pd.read_csv("../../otodom.csv")
 bg = "./krk.png"
 bg_coord = [(50.144579, 19.757886), (49.972568, 20.120011)]
 
+# drop offers without a price or area
+data.dropna(subset=["price", "area"], inplace=True)
+
 # Calculate price per square meter
 data["price_per_sqm"] = data["price"] / data["area"]
 # data["price_per_sqm"] = data["price_per_sqm"].clip(25000, 30000)
@@ -28,9 +31,10 @@ ax.imshow(
 )
 
 # Create a grid of points
+POINTS = 200
 x_min, x_max = bg_coord[0][1], bg_coord[1][1]
 y_min, y_max = bg_coord[1][0], bg_coord[0][0]
-x_grid, y_grid = np.mgrid[x_min:x_max:100j, y_min:y_max:100j]
+x_grid, y_grid = np.mgrid[x_min : x_max : POINTS * 1j, y_min : y_max : POINTS * 1j]
 
 # Stack coordinates into pairs
 positions = np.vstack([x_grid.ravel(), y_grid.ravel()])
@@ -40,7 +44,7 @@ values = np.vstack([data["location_lon"], data["location_lat"]])
 kernel = gaussian_kde(values, weights=data["price_per_sqm"].values)
 
 # Evaluate kernel on grid
-z = kernel(positions).reshape(100, 100)
+z = kernel(positions).reshape(POINTS, POINTS)
 
 # Plot heatmap
 heatmap = ax.imshow(

@@ -27,6 +27,7 @@ class RealEstateListing:
     # Property characteristics
     heating: str
     floor: str
+    building_floors: Optional[int]  # Total number of floors in the building
     rent: Optional[float]
     state: str  # Construction status/finishing state
     market: str  # Primary/Secondary market
@@ -61,6 +62,7 @@ class RealEstateListing:
             location_lon=None,
             heating=cls.MISSING_INFO,
             floor=cls.MISSING_INFO,
+            building_floors=None,
             rent=None,
             state=cls.MISSING_INFO,
             market=cls.MISSING_INFO,
