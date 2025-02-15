@@ -1,5 +1,6 @@
 import argparse
 from scrapper.scraping_utils import get_n_pages
+import pandas as pd
 
 
 def create_parser() -> argparse.ArgumentParser:
@@ -15,7 +16,7 @@ def create_parser() -> argparse.ArgumentParser:
         "--pages", type=int, default=1, help="number of pages to scrape (default: 1)"
     )
     parser.add_argument(
-        "--offset", type=int, default=0, help="page number to start from (default: 0)"
+        "--offset", type=int, default=1, help="page number to start from (default: 1)"
     )
     parser.add_argument(
         "--debug",
@@ -35,7 +36,14 @@ def main():
     if args.debug:
         print("Debug mode enabled - raw JSON data will be saved to logs/")
 
-    df = get_n_pages(args.pages, args.offset, debug=args.debug)
+    df_prev = pd.DataFrame()
+    try:
+        df_prev = pd.read_csv(args.output)
+        df_prev.set_index("slug", inplace=True)
+    except:
+        pass
+
+    df = get_n_pages(args.pages, df_prev=df_prev, offset=args.offset, debug=args.debug)
 
     if df.empty:
         print(

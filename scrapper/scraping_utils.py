@@ -90,6 +90,7 @@ def _extract_number(text: str) -> Optional[float]:
 def get_links_for_search_page(n: int) -> list[str]:
     """Get all listing links from a search results page."""
     url = SEARCH_URL + str(n)
+    # print(f"Getting links from {url}")
     soup = _load_page(url)
     json_data = _extract_json_from_script(soup)
 
@@ -174,11 +175,16 @@ def extract_data(
         return RealEstateListing.create_empty(url)
 
 
-def get_one_search_page(n: int, debug: bool = False) -> pd.DataFrame:
+def get_one_search_page(
+    n: int, df_prev: pd.DataFrame, debug: bool = False
+) -> pd.DataFrame:
     """Get all listings from a single search page and return them as a DataFrame."""
     links = get_links_for_search_page(n)
     data_list = []
     for link in links:
+        if (not df_prev.empty) and (link in df_prev["url"].values):
+            # print(f"  Skipping {link}")
+            continue
         print(f"Checking {link}")
         try:
             soup = _load_page(link)
@@ -196,14 +202,20 @@ def get_one_search_page(n: int, debug: bool = False) -> pd.DataFrame:
     return df
 
 
-def get_n_pages(n: int, offset: int = 0, debug: bool = False) -> pd.DataFrame:
+def get_n_pages(
+    n: int, df_prev: pd.DataFrame, offset: int = 0, debug: bool = False
+) -> pd.DataFrame:
     """Get listings from multiple pages and combine them into a single DataFrame."""
-    df = pd.DataFrame()
+    df = df_prev
     for i in range(offset, offset + n):
-        print(f"\nProcessing page {i + 1} of {offset + n}")
-        page_df = get_one_search_page(i, debug=debug)
-        if not page_df.empty:
+        print(f"\nProcessing page {i} of {offset + n -1}")
+        page_df = get_one_search_page(i, df_prev, debug=debug)
+        if df.empty:
+            df = page_df
+        elif not page_df.empty:
+            # TODO: I'm getting a warning here: FutureWarning: The behavior of DataFrame concatenation with empty or all-NA entries is deprecated
+            page_df = page_df.dropna(axis=1, how="all")
             df = pd.concat([df, page_df], ignore_index=False)
         else:
-            print(f"No data found on page {i + 1}")
+            print(f"No (new) data found on page {i}")
     return df
