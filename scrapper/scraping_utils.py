@@ -9,6 +9,7 @@ from scrapper.data_types import RealEstateListing
 BASE_URL = "https://www.otodom.pl"
 CITY = "krakow"
 SEARCH_URL = f"{BASE_URL}/pl/wyniki/sprzedaz/mieszkanie/malopolskie/{CITY}/{CITY}/{CITY}?viewType=listing&page="
+print(SEARCH_URL)
 
 
 def _extract_json_from_script(
@@ -182,9 +183,13 @@ def get_one_search_page(
     links = get_links_for_search_page(n)
     data_list = []
     for link in links:
+        # I'm getting duplicates - URL can end with ID.xxxxx or IDxxxxx
+        link = re.sub(r"ID\.", r"ID", link)
         if (not df_prev.empty) and (link in df_prev["url"].values):
-            # print(f"  Skipping {link}")
             continue
+        if (len(data_list)) and (link in [data.url for data in data_list]):
+            continue
+
         print(f"Checking {link}")
         try:
             soup = _load_page(link)
