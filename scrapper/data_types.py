@@ -37,7 +37,6 @@ class RealEstateListing:
     # Additional information
     available: str
     ad_type: str  # Type of advertiser
-    extra_info: str  # Additional features and information
 
     # Metadata
     scrapped_date: datetime.date = datetime.date.today()

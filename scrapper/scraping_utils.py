@@ -165,7 +165,6 @@ def extract_data(
             ownership=ad_data.get("target", {}).get("Building_ownership", [None])[0],
             available=available,
             ad_type=ad_data.get("advertiserType", "brak informacji"),
-            extra_info="todo",
         )
 
     except Exception as e:
