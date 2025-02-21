@@ -1,6 +1,7 @@
 import React from "react";
 import { TextField, Grid, InputAdornment } from "@mui/material";
 import { FormData } from "@/types/form";
+import Location from "./Location";
 
 interface BasicInformationProps {
   formData: FormData;
@@ -15,16 +16,7 @@ const BasicInformation: React.FC<BasicInformationProps> = ({
 }) => {
   return (
     <>
-      <Grid item xs={12}>
-        <TextField
-          fullWidth
-          label="Lokalizacja"
-          name="location"
-          value={formData.location}
-          onChange={onTextChange}
-        />
-      </Grid>
-
+      <Location formData={formData} onTextChange={onTextChange} />
       <Grid item xs={12} sm={6}>
         <TextField
           fullWidth
