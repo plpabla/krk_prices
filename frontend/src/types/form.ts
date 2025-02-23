@@ -8,6 +8,9 @@ import {
 
 export interface FormData {
   location: string;
+  city: string;
+  district: string;
+
   area: number | null;
   rooms: number | null;
   heating: HeatingType;
@@ -23,6 +26,8 @@ export interface FormData {
 
 export const defaultFormData: FormData = {
   location: "",
+  city: "Kraków",
+  district: "",
   area: null,
   rooms: null,
   heating: HeatingType.DISTRICT,

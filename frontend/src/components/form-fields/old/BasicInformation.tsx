@@ -1,7 +1,7 @@
 import React from "react";
 import { TextField, Grid, InputAdornment } from "@mui/material";
 import { FormData } from "@/types/form";
-import Location from "./Location";
+import Location from "../Location";
 
 interface BasicInformationProps {
   formData: FormData;
