@@ -60,6 +60,7 @@ export default function Location({ handleChange, formValues }: LocationProps) {
 
   useEffect(() => {
     setCities(["Kraków", "Warszawa", "Wrocław", "Poznań", "Gdańsk"]);
+    formValues.city = "Kraków";
   }, []);
 
   useEffect(() => {
@@ -68,6 +69,10 @@ export default function Location({ handleChange, formValues }: LocationProps) {
     else if (formValues.city === "Warszawa")
       setDistricts(["Mokotów", "Śródmieście", "Ursynów", "Wola"]);
     else setDistricts([]);
+  }, [formValues.city]);
+
+  useEffect(() => {
+    formValues.district = "";
   }, [formValues.city]);
 
   return (

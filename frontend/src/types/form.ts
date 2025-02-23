@@ -26,7 +26,7 @@ export interface FormData {
 
 export const defaultFormData: FormData = {
   location: "",
-  city: "Kraków",
+  city: "",
   district: "",
   area: null,
   rooms: null,
