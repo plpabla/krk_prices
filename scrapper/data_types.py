@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from typing import Optional, ClassVar, List
+import datetime
 
 
 @dataclass
@@ -36,7 +37,9 @@ class RealEstateListing:
     # Additional information
     available: str
     ad_type: str  # Type of advertiser
-    extra_info: str  # Additional features and information
+
+    # Metadata
+    scrapped_date: datetime.date = datetime.date.today()
 
     @property
     def price_per_meter(self) -> Optional[float]:
