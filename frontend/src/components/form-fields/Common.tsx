@@ -1,4 +1,10 @@
 import { TextField, Grid, Select, MenuItem } from "@mui/material";
+import { FormData } from "@/types/form";
+
+export interface FormFieldProps {
+  formValues: FormData;
+  handleChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+}
 
 export function ResponsiveLabel({ text }: { text: string }) {
   return (

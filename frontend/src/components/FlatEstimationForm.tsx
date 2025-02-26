@@ -1,9 +1,11 @@
 import React from "react";
-import { Box, Button, Typography, Container, Grid } from "@mui/material";
-import { FormData, defaultFormData } from "@/types/form";
-import Location from "@/components/form-fields/Location";
-import Submit from "@/components/form-fields/Submit";
 import { Formik } from "formik";
+import { Box, Button, Typography, Container, Grid } from "@mui/material";
+
+import { FormData, defaultFormData } from "@/types/form";
+import Submit from "@/components/form-fields/Submit";
+import Location from "@/components/form-fields/Location";
+import Area from "@/components/form-fields/Area";
 
 const FlatEstimationForm: React.FC = () => {
   return (
@@ -22,6 +24,7 @@ const FlatEstimationForm: React.FC = () => {
           {({ values, handleChange, handleSubmit }) => (
             <form onSubmit={handleSubmit}>
               <Location handleChange={handleChange} formValues={values} />
+              <Area handleChange={handleChange} formValues={values} />
               <Submit />
             </form>
           )}
