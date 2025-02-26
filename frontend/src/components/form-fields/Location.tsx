@@ -3,25 +3,11 @@ import { TextField, Grid, Select, MenuItem } from "@mui/material";
 import { FormData } from "@/types/form";
 import { useState, useEffect } from "react";
 import { getCities, getDistricts } from "@/api";
+import { ResponsiveLabel } from "@/components/form-fields/Common";
 
 interface LocationProps {
   formValues: FormData;
   handleChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-}
-
-function ResponsiveLabel({ text }: { text: string }) {
-  return (
-    <Grid
-      item
-      xs={12}
-      sm={2}
-      container
-      alignItems="center"
-      justifyContent={{ xs: "flex-start", sm: "flex-end" }}
-    >
-      {text}
-    </Grid>
-  );
 }
 
 function ListItems({

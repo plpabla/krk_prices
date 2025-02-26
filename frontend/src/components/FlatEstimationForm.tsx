@@ -19,10 +19,9 @@ const FlatEstimationForm: React.FC = () => {
             }, 400);
           }}
         >
-          {({ values, errors, touched, handleChange, handleSubmit }) => (
+          {({ values, handleChange, handleSubmit }) => (
             <form onSubmit={handleSubmit}>
               <Location handleChange={handleChange} formValues={values} />
-              {errors.location && touched.location && errors.location}
               <Submit />
             </form>
           )}
