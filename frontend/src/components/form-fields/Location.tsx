@@ -2,6 +2,7 @@ import React from "react";
 import { TextField, Grid, Select, MenuItem } from "@mui/material";
 import { FormData } from "@/types/form";
 import { useState, useEffect } from "react";
+import { getCities, getDistricts } from "@/api";
 
 interface LocationProps {
   formValues: FormData;
@@ -59,20 +60,17 @@ export default function Location({ handleChange, formValues }: LocationProps) {
   const [districts, setDistricts] = useState<string[]>([]);
 
   useEffect(() => {
-    setCities(["Kraków", "Warszawa", "Wrocław", "Poznań", "Gdańsk"]);
-    formValues.city = "Kraków";
+    getCities().then((cities) => {
+      setCities(cities);
+      formValues.city = cities[0];
+    });
   }, []);
 
   useEffect(() => {
-    if (formValues.city === "Kraków")
-      setDistricts(["Płaszów", "Krowodrza", "Czyżyny", "Podgórze Duchackie"]);
-    else if (formValues.city === "Warszawa")
-      setDistricts(["Mokotów", "Śródmieście", "Ursynów", "Wola"]);
-    else setDistricts([]);
-  }, [formValues.city]);
-
-  useEffect(() => {
-    formValues.district = "";
+    getDistricts(formValues.city).then((cities) => {
+      setDistricts(cities);
+      formValues.district = cities[0];
+    });
   }, [formValues.city]);
 
   return (
