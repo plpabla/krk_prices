@@ -5,7 +5,7 @@ import { Box, Button, Typography, Container, Grid } from "@mui/material";
 import { FormData, defaultFormData } from "@/types/form";
 import Submit from "@/components/form-fields/Submit";
 import Location from "@/components/form-fields/Location";
-import Area from "@/components/form-fields/Area";
+import NumericField from "@/components/form-fields/NumericField";
 
 const FlatEstimationForm: React.FC = () => {
   return (
@@ -24,7 +24,12 @@ const FlatEstimationForm: React.FC = () => {
           {({ values, handleChange, handleSubmit }) => (
             <form onSubmit={handleSubmit}>
               <Location handleChange={handleChange} formValues={values} />
-              <Area handleChange={handleChange} formValues={values} />
+              <NumericField
+                label="Powierzchnia [m²]"
+                name="area"
+                value={values.area}
+                handleChange={handleChange}
+              />
               <Submit />
             </form>
           )}

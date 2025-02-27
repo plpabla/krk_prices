@@ -1,17 +1,27 @@
 import { Grid, TextField } from "@mui/material";
 
-import { FormFieldProps } from "@/components/form-fields/Common";
+interface FormFieldProps {
+  value: number | null;
+  label: string;
+  name: string;
+  handleChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+}
 
-export default function Area({ handleChange, formValues }: FormFieldProps) {
+export default function NumericField({
+  label,
+  value,
+  name,
+  handleChange,
+}: FormFieldProps) {
   return (
     <Grid container spacing={2} sx={{ paddingTop: 4 }}>
       {/* <ResponsiveLabel text="Powierzchnia" /> */}
       <Grid item xs={12} sm={3}>
         <TextField
-          label="Powierzchnia [m²]"
-          id="area"
-          name="area"
-          value={formValues.area || ""}
+          label={label}
+          id={name}
+          name={name}
+          value={value || ""}
           onChange={handleChange}
           type="number"
           InputLabelProps={{ shrink: true }}
