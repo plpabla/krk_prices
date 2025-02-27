@@ -24,12 +24,20 @@ const FlatEstimationForm: React.FC = () => {
           {({ values, handleChange, handleSubmit }) => (
             <form onSubmit={handleSubmit}>
               <Location handleChange={handleChange} formValues={values} />
-              <NumericField
-                label="Powierzchnia [m²]"
-                name="area"
-                value={values.area}
-                handleChange={handleChange}
-              />
+              <Grid container spacing={2} sx={{ paddingTop: 4 }}>
+                <NumericField
+                  label="Powierzchnia [m²]"
+                  name="area"
+                  value={values.area}
+                  handleChange={handleChange}
+                />
+                <NumericField
+                  label="Liczba pokoi"
+                  name="rooms"
+                  value={values.rooms}
+                  handleChange={handleChange}
+                />
+              </Grid>
               <Submit />
             </form>
           )}
