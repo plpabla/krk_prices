@@ -3,6 +3,7 @@ import { Formik } from "formik";
 import { Box, Button, Typography, Container, Grid } from "@mui/material";
 
 import { FormData, defaultFormData } from "@/types/form";
+import { getPriceEstimate } from "@/api";
 import Submit from "@/components/form-fields/Submit";
 import Location from "@/components/form-fields/Location";
 import NumericField from "@/components/form-fields/NumericField";
@@ -16,7 +17,9 @@ const FlatEstimationForm: React.FC = () => {
           initialValues={defaultFormData}
           onSubmit={(values, { setSubmitting }) => {
             setTimeout(() => {
-              alert(JSON.stringify(values, null, 2));
+              getPriceEstimate(values).then((price) => {
+                console.log("Price estimate:", price);
+              });
               setSubmitting(false);
             }, 400);
           }}

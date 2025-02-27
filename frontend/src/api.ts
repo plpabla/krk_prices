@@ -1,3 +1,5 @@
+import { FormData } from "@/types/form";
+
 export async function getCities(): Promise<string[]> {
   await new Promise((resolve) => setTimeout(resolve, 1000));
   const response: { [key: string]: string[] } = {
@@ -17,4 +19,10 @@ export async function getDistricts(city: string): Promise<string[]> {
   };
   // @ts-ignore
   return city in response ? response[city] : [];
+}
+
+export async function getPriceEstimate(data: FormData): Promise<number> {
+  await new Promise((resolve) => setTimeout(resolve, 1000));
+  alert(JSON.stringify(data, null, 2));
+  return Math.floor(Math.random() * 1000000);
 }
