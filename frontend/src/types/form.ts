@@ -15,6 +15,7 @@ export interface FormData {
   rooms: number | null;
   heating: HeatingType;
   floor: number | null;
+  floorsInBuilding: number | null;
   rent: number | null;
   state: StateType;
   market: MarketType;
@@ -32,6 +33,7 @@ export const defaultFormData: FormData = {
   rooms: null,
   heating: HeatingType.DISTRICT,
   floor: null,
+  floorsInBuilding: null,
   rent: null,
   state: StateType.READY_TO_MOVE,
   market: MarketType.SECONDARY,

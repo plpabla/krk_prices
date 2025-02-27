@@ -37,6 +37,18 @@ const FlatEstimationForm: React.FC = () => {
                   value={values.rooms}
                   handleChange={handleChange}
                 />
+                <NumericField
+                  label="Piętro"
+                  name="floor"
+                  value={values.floor}
+                  handleChange={handleChange}
+                />
+                <NumericField
+                  label="Ilość pięter w budynku"
+                  name="floorsInBuilding"
+                  value={values.floorsInBuilding}
+                  handleChange={handleChange}
+                />
               </Grid>
               <Submit />
             </form>
