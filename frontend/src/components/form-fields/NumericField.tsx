@@ -14,20 +14,17 @@ export default function NumericField({
   handleChange,
 }: FormFieldProps) {
   return (
-    <Grid container spacing={2} sx={{ paddingTop: 4 }}>
-      {/* <ResponsiveLabel text="Powierzchnia" /> */}
-      <Grid item xs={12} sm={3}>
-        <TextField
-          label={label}
-          id={name}
-          name={name}
-          value={value || ""}
-          onChange={handleChange}
-          type="number"
-          InputLabelProps={{ shrink: true }}
-          sx={{ width: "100%" }}
-        />
-      </Grid>
+    <Grid item xs={12} sm={3}>
+      <TextField
+        label={label}
+        id={name}
+        name={name}
+        value={value || ""}
+        onChange={handleChange}
+        type="number"
+        InputLabelProps={{ shrink: true }}
+        sx={{ width: "100%" }}
+      />
     </Grid>
   );
 }
