@@ -13,9 +13,12 @@ export interface FormData {
 
   area: number | null;
   rooms: number | null;
-  heating: HeatingType;
   floor: number | null;
   floorsInBuilding: number | null;
+
+  balcony: boolean;
+
+  heating: HeatingType;
   rent: number | null;
   state: StateType;
   market: MarketType;
@@ -29,11 +32,15 @@ export const defaultFormData: FormData = {
   location: "",
   city: "",
   district: "",
+
   area: null,
   rooms: null,
-  heating: HeatingType.DISTRICT,
   floor: null,
   floorsInBuilding: null,
+
+  balcony: false,
+
+  heating: HeatingType.DISTRICT,
   rent: null,
   state: StateType.READY_TO_MOVE,
   market: MarketType.SECONDARY,

@@ -1,12 +1,29 @@
 import { Grid, Checkbox, FormControlLabel } from "@mui/material";
 
-export default function BoxcheckField() {
+interface FormFieldProps {
+  value: boolean;
+  label: string;
+  name: string;
+  handleChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+}
+
+export default function BoxcheckField({
+  value,
+  label,
+  name,
+  handleChange,
+}: FormFieldProps) {
   return (
     <Grid item xs={12} sm={3}>
       <FormControlLabel
         control={<Checkbox />}
-        label="Check me"
+        label={label}
+        name={name}
+        checked={!!value}
+        // @ts-ignore
+        onChange={handleChange}
         sx={{ width: "100%" }}
+        inputProps={{ "aria-label": "controlled" }}
       />
     </Grid>
   );
