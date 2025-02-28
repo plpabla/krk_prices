@@ -17,6 +17,7 @@ export interface FormData {
   floorsInBuilding: number | null;
 
   balcony: boolean;
+  separate_kitchen: boolean;
 
   heating: HeatingType;
   rent: number | null;
@@ -39,6 +40,7 @@ export const defaultFormData: FormData = {
   floorsInBuilding: null,
 
   balcony: false,
+  separate_kitchen: false,
 
   heating: HeatingType.DISTRICT,
   rent: null,

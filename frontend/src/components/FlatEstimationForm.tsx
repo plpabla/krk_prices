@@ -59,6 +59,12 @@ const FlatEstimationForm: React.FC = () => {
                   value={values.balcony}
                   handleChange={handleChange}
                 />
+                <BoxcheckField
+                  label="oddzielna kuchnia"
+                  name="separate_kitchen"
+                  value={values.separate_kitchen}
+                  handleChange={handleChange}
+                />
               </Grid>
               <Submit />
             </form>
