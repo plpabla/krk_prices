@@ -1,8 +1,9 @@
-import { TextField, Grid, Select, MenuItem } from "@mui/material";
-import { FormData } from "@/types/form";
+import { Grid } from "@mui/material";
 
 export interface FormFieldProps {
-  formValues: FormData;
+  value: any;
+  label: string;
+  name: string;
   handleChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }
 

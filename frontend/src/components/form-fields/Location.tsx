@@ -1,10 +1,13 @@
 import { TextField, Grid, Select, MenuItem } from "@mui/material";
 import { useState, useEffect } from "react";
 import { getCities, getDistricts } from "@/api";
-import {
-  FormFieldProps,
-  ResponsiveLabel,
-} from "@/components/form-fields/Common";
+import { ResponsiveLabel } from "@/components/form-fields/Common";
+import { FormData } from "@/types/form";
+
+interface LocationProps {
+  formValues: FormData;
+  handleChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+}
 
 function ListItems({
   label,
@@ -37,7 +40,7 @@ function ListItems({
   );
 }
 
-export default function Location({ handleChange, formValues }: FormFieldProps) {
+export default function Location({ handleChange, formValues }: LocationProps) {
   const [cities, setCities] = useState<string[]>([]);
   const [districts, setDistricts] = useState<string[]>([]);
 

@@ -1,10 +1,8 @@
 import { Grid, Checkbox, FormControlLabel } from "@mui/material";
+import { FormFieldProps } from "@/components/form-fields/Common";
 
-interface FormFieldProps {
+interface BoxcheckFieldProps extends FormFieldProps {
   value: boolean;
-  label: string;
-  name: string;
-  handleChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
 export default function BoxcheckField({
@@ -12,7 +10,7 @@ export default function BoxcheckField({
   label,
   name,
   handleChange,
-}: FormFieldProps) {
+}: BoxcheckFieldProps) {
   return (
     <Grid item xs={12} sm={3}>
       <FormControlLabel

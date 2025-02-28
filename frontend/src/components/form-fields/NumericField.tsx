@@ -1,10 +1,8 @@
 import { Grid, TextField } from "@mui/material";
+import { FormFieldProps } from "@/components/form-fields/Common";
 
-interface FormFieldProps {
+interface NumericFieldProps extends FormFieldProps {
   value: number | null;
-  label: string;
-  name: string;
-  handleChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
 export default function NumericField({
@@ -12,7 +10,7 @@ export default function NumericField({
   value,
   name,
   handleChange,
-}: FormFieldProps) {
+}: NumericFieldProps) {
   return (
     <Grid item xs={12} sm={3}>
       <TextField
