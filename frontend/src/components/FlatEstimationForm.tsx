@@ -1,12 +1,13 @@
 import React from "react";
 import { Formik } from "formik";
-import { Box, Button, Typography, Container, Grid } from "@mui/material";
+import { Container, Grid } from "@mui/material";
 
-import { FormData, defaultFormData } from "@/types/form";
+import { defaultFormData } from "@/types/form";
 import { getPriceEstimate } from "@/api";
 import Submit from "@/components/form-fields/Submit";
 import Location from "@/components/form-fields/Location";
 import NumericField from "@/components/form-fields/NumericField";
+import BoxcheckField from "@/components/form-fields/BoxcheckField";
 
 const FlatEstimationForm: React.FC = () => {
   return (
@@ -52,6 +53,10 @@ const FlatEstimationForm: React.FC = () => {
                   value={values.floorsInBuilding}
                   handleChange={handleChange}
                 />
+                <BoxcheckField />
+                <BoxcheckField />
+                <BoxcheckField />
+                <BoxcheckField />
               </Grid>
               <Submit />
             </form>
