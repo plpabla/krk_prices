@@ -3,12 +3,16 @@ import { FormFieldProps } from "@/components/form-fields/Common";
 
 interface ListFieldProps extends FormFieldProps {
   value: string | null;
+  options: {
+    [key: string]: string | number;
+  };
 }
 
 export default function ListField({
   label,
   value,
   name,
+  options,
   handleChange,
 }: ListFieldProps) {
   return (
@@ -23,9 +27,11 @@ export default function ListField({
           // @ts-ignore
           onChange={handleChange}
         >
-          <MenuItem value={10}>todo1</MenuItem>
-          <MenuItem value={20}>todo2</MenuItem>
-          <MenuItem value={30}>todo3</MenuItem>
+          {Object.entries(options).map(([key, value]) => (
+            <MenuItem key={key} value={value}>
+              {key}
+            </MenuItem>
+          ))}
         </Select>
       </FormControl>
     </Grid>
