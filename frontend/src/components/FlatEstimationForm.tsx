@@ -8,6 +8,7 @@ import Submit from "@/components/form-fields/Submit";
 import Location from "@/components/form-fields/Location";
 import NumericField from "@/components/form-fields/NumericField";
 import BoxcheckField from "@/components/form-fields/BoxcheckField";
+import ListField from "@/components/form-fields/ListField";
 
 const FlatEstimationForm: React.FC = () => {
   return (
@@ -63,6 +64,12 @@ const FlatEstimationForm: React.FC = () => {
                   label="oddzielna kuchnia"
                   name="separate_kitchen"
                   value={values.separate_kitchen}
+                  handleChange={handleChange}
+                />
+                <ListField
+                  label="Stan mieszkania"
+                  name="condition"
+                  value={"todo"}
                   handleChange={handleChange}
                 />
               </Grid>
