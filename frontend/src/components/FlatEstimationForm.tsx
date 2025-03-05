@@ -68,8 +68,8 @@ const FlatEstimationForm: React.FC = () => {
                 />
                 <ListField
                   label="Stan mieszkania"
-                  name="condition"
-                  value={"todo"}
+                  name="state"
+                  value={values.state}
                   handleChange={handleChange}
                 />
               </Grid>

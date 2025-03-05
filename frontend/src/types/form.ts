@@ -19,9 +19,10 @@ export interface FormData {
   balcony: boolean;
   separate_kitchen: boolean;
 
+  state: StateType;
+
   heating: HeatingType;
   rent: number | null;
-  state: StateType;
   market: MarketType;
   ownership: OwnershipType;
   available: string;
