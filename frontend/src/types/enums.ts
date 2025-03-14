@@ -41,4 +41,6 @@ function convertEnumToDict<T extends { [key: string]: string }>(
 
 export const HeatingDict = convertEnumToDict(HeatingType);
 export const StateDict = convertEnumToDict(StateType);
+export const MarketDict = convertEnumToDict(MarketType);
 export const OwnershipDict = convertEnumToDict(OwnershipType);
+export const AdDict = convertEnumToDict(AdType);
