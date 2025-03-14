@@ -20,13 +20,13 @@ export interface FormData {
   separate_kitchen: boolean;
 
   state: StateType;
+  market: MarketType;
+  ad_type: AdType;
+  ownership: OwnershipType;
 
   heating: HeatingType;
   rent: number | null;
-  market: MarketType;
-  ownership: OwnershipType;
   available: string;
-  ad_type: AdType;
   extra_info: string;
 }
 

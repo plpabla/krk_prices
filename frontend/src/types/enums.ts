@@ -12,14 +12,14 @@ export enum StateType {
 }
 
 export enum MarketType {
-  PRIMARY = "pierwotny",
-  SECONDARY = "wtorny",
+  PRIMARY = "Pierwotny",
+  SECONDARY = "Wtorny",
 }
 
 export enum OwnershipType {
-  OWNERSHIP = "wlasnosc",
-  COOPERATIVE = "spoldzielcze",
-  OTHER = "inne",
+  OWNERSHIP = "Własnościowe",
+  COOPERATIVE = "Spoldzielcze",
+  OTHER = "Inne",
 }
 
 export enum AdType {
