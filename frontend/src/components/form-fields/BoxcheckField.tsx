@@ -12,7 +12,7 @@ export default function BoxcheckField({
   handleChange,
 }: BoxcheckFieldProps) {
   return (
-    <Grid item xs={12} sm={3}>
+    <Grid item xs={6} sm={3}>
       <FormControlLabel
         control={<Checkbox />}
         label={label}

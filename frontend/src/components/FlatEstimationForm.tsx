@@ -30,7 +30,11 @@ const FlatEstimationForm: React.FC = () => {
           {({ values, handleChange, handleSubmit }) => (
             <form onSubmit={handleSubmit}>
               <Location handleChange={handleChange} formValues={values} />
-              <Grid container spacing={2} sx={{ paddingTop: 4 }}>
+              <Grid
+                container
+                spacing={4}
+                sx={{ paddingTop: 4, paddingBottom: 4 }}
+              >
                 <NumericField
                   label="Powierzchnia [m²]"
                   name="area"
@@ -67,6 +71,9 @@ const FlatEstimationForm: React.FC = () => {
                   value={values.separate_kitchen}
                   handleChange={handleChange}
                 />
+                <Grid item xs={12} sm={6}>
+                  {/* This is an intentionally empty grid item for spacing */}
+                </Grid>
                 <ListField
                   label="Stan mieszkania"
                   name="state"
