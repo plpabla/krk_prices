@@ -6,9 +6,9 @@ export enum HeatingType {
 }
 
 export enum StateType {
-  NEEDS_RENOVATION = "do_remontu",
-  READY_TO_MOVE = "do_zamieszkania",
-  NEEDS_FINISHING = "do_wykonczenia",
+  READY_TO_MOVE = "Do zamieszkania",
+  NEEDS_RENOVATION = "Do remontu",
+  NEEDS_FINISHING = "Do wykończenia",
 }
 
 export enum MarketType {
@@ -26,3 +26,19 @@ export enum AdType {
   PRIVATE = "prywatny",
   AGENCY = "biuro",
 }
+
+function convertEnumToDict<T extends { [key: string]: string }>(
+  enumObj: T
+): { [key: string]: keyof T } {
+  const dict: { [key: string]: string } = {};
+
+  Object.entries(enumObj).forEach(([key, value]) => {
+    dict[key] = value;
+  });
+
+  return dict;
+}
+
+export const HeatingDict = convertEnumToDict(HeatingType);
+export const StateDict = convertEnumToDict(StateType);
+export const OwnershipDict = convertEnumToDict(OwnershipType);

@@ -28,8 +28,8 @@ export default function ListField({
           onChange={handleChange}
         >
           {Object.entries(options).map(([key, value]) => (
-            <MenuItem key={key} value={value}>
-              {key}
+            <MenuItem key={key} value={key}>
+              {value}
             </MenuItem>
           ))}
         </Select>
