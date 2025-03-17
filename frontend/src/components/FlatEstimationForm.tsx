@@ -43,14 +43,6 @@ const FlatEstimationForm: React.FC = () => {
                 spacing={4}
                 sx={{ paddingTop: 4, paddingBottom: 4 }}
               >
-                <ListField
-                  label="Typ ogłoszenia"
-                  name="ad_type"
-                  options={AdDict}
-                  value={values.ad_type}
-                  handleChange={handleChange}
-                />
-                <Spacer n={3} />
                 <NumericField
                   label="Powierzchnia [m²]"
                   name="area"
