@@ -27,6 +27,14 @@ export enum AdType {
   AGENCY = "biuro",
 }
 
+export enum AvailableType {
+  NOW = "od zaraz",
+  Y2025 = "2025",
+  Y2026 = "2026",
+  Y2027 = "2027",
+  Y2028 = "2028+",
+}
+
 function convertEnumToDict<T extends { [key: string]: string }>(
   enumObj: T
 ): { [key: string]: keyof T } {
@@ -44,3 +52,4 @@ export const StateDict = convertEnumToDict(StateType);
 export const MarketDict = convertEnumToDict(MarketType);
 export const OwnershipDict = convertEnumToDict(OwnershipType);
 export const AdDict = convertEnumToDict(AdType);
+export const AvailableDict = convertEnumToDict(AvailableType);

@@ -3,7 +3,13 @@ import { Formik } from "formik";
 import { Container, Grid } from "@mui/material";
 
 import { defaultFormData } from "@/types/form";
-import { StateDict, MarketDict, AdDict, OwnershipDict } from "@/types/enums";
+import {
+  StateDict,
+  MarketDict,
+  AdDict,
+  OwnershipDict,
+  AvailableDict,
+} from "@/types/enums";
 import { getPriceEstimate } from "@/api";
 import Submit from "@/components/form-fields/Submit";
 import Location from "@/components/form-fields/Location";
@@ -102,7 +108,13 @@ const FlatEstimationForm: React.FC = () => {
                   value={values.ownership}
                   handleChange={handleChange}
                 />
-                Dostępne od (TODO)
+                <ListField
+                  label="Dostępne od"
+                  name="available"
+                  options={AvailableDict}
+                  value={values.available}
+                  handleChange={handleChange}
+                />
               </Grid>
               <Submit />
             </form>
