@@ -1,8 +1,6 @@
 # Status
 
-Frontend build: [![Node](https://github.com/plpabla/krk_prices/actions/workflows/frontent-build.yml/badge.svg)](https://github.com/plpabla/krk_prices/actions/workflows/frontent-build.yml)
-
-Backend build: todo
+[![Node](https://github.com/plpabla/krk_prices/actions/workflows/frontent-build.yml/badge.svg)](https://github.com/plpabla/krk_prices/actions/workflows/frontent-build.yml)
 
 # Setup - scrapper
 
