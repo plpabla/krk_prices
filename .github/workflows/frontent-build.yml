@@ -28,8 +28,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-      - name: Change directory
-        run: cd frontend
+      - name: Show directory
+        run: ls -la
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v4
         with:
