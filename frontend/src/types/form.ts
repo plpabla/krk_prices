@@ -23,10 +23,14 @@ export interface FormData {
   market: MarketType;
   ad_type: AdType;
   ownership: OwnershipType;
-
   heating: HeatingType;
-  rent: number | null;
   available: string;
+
+  garage: boolean;
+  elevator: boolean;
+  basement: boolean;
+
+  rent: number | null;
   extra_info: string;
 }
 
@@ -51,4 +55,8 @@ export const defaultFormData: FormData = {
   available: "",
   ad_type: AdType.PRIVATE,
   extra_info: "",
+
+  garage: false,
+  elevator: false,
+  basement: false,
 };

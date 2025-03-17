@@ -125,6 +125,25 @@ const FlatEstimationForm: React.FC = () => {
                   value={values.available}
                   handleChange={handleChange}
                 />
+                <Spacer n={2} />
+                <BoxcheckField
+                  label="garaż/miejsce parkingowe"
+                  name="garage"
+                  value={values.garage}
+                  handleChange={handleChange}
+                />
+                <BoxcheckField
+                  label="winda"
+                  name="elevator"
+                  value={values.elevator}
+                  handleChange={handleChange}
+                />
+                <BoxcheckField
+                  label="piwnica/komórka lokatorska"
+                  name="basement"
+                  value={values.basement}
+                  handleChange={handleChange}
+                />
               </Grid>
               <Submit />
             </form>
