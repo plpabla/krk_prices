@@ -8,25 +8,46 @@ import {
 
 export interface FormData {
   location: string;
+  city: string;
+  district: string;
+
   area: number | null;
   rooms: number | null;
-  heating: HeatingType;
   floor: number | null;
-  rent: number | null;
+  floorsInBuilding: number | null;
+
+  balcony: boolean;
+  separate_kitchen: boolean;
+
   state: StateType;
   market: MarketType;
-  ownership: OwnershipType;
-  available: string;
   ad_type: AdType;
+  ownership: OwnershipType;
+  heating: HeatingType;
+  available: string;
+
+  garage: boolean;
+  elevator: boolean;
+  basement: boolean;
+
+  rent: number | null;
   extra_info: string;
 }
 
 export const defaultFormData: FormData = {
   location: "",
+  city: "",
+  district: "",
+
   area: null,
   rooms: null,
-  heating: HeatingType.DISTRICT,
   floor: null,
+  floorsInBuilding: null,
+
+  balcony: false,
+  separate_kitchen: false,
+
+  heating: HeatingType.DISTRICT,
   rent: null,
   state: StateType.READY_TO_MOVE,
   market: MarketType.SECONDARY,
@@ -34,4 +55,8 @@ export const defaultFormData: FormData = {
   available: "",
   ad_type: AdType.PRIVATE,
   extra_info: "",
+
+  garage: false,
+  elevator: false,
+  basement: false,
 };

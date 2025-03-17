@@ -1,5 +1,6 @@
 import { CssBaseline, ThemeProvider, createTheme } from "@mui/material";
-import FlatEstimationForm from "./components/FlatEstimationForm";
+import FlatEstimationForm from "@/components/FlatEstimationForm";
+import Footer from "@/components/Footer";
 
 const theme = createTheme({
   palette: {
@@ -14,6 +15,7 @@ function App() {
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <FlatEstimationForm />
+      <Footer />
     </ThemeProvider>
   );
 }

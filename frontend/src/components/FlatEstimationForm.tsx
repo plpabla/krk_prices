@@ -1,52 +1,156 @@
-import React, { useState } from "react";
-import { Box, Button, Typography, Container, Grid } from "@mui/material";
-import { FormData, defaultFormData } from "@/types/form";
-import Footer from "./Footer";
-import FormFields from "./FormFields";
+import React from "react";
+import { Formik } from "formik";
+import { Container, Grid } from "@mui/material";
+
+import { defaultFormData } from "@/types/form";
+import {
+  StateDict,
+  MarketDict,
+  AdDict,
+  OwnershipDict,
+  AvailableDict,
+  HeatingDict,
+} from "@/types/enums";
+import { getPriceEstimate } from "@/api";
+import Submit from "@/components/form-fields/Submit";
+import Spacer from "@/components/form-fields/Spacer";
+import Location from "@/components/form-fields/Location";
+import NumericField from "@/components/form-fields/NumericField";
+import BoxcheckField from "@/components/form-fields/BoxcheckField";
+import ListField from "@/components/form-fields/ListField";
 
 const FlatEstimationForm: React.FC = () => {
-  const [formData, setFormData] = useState<FormData>(defaultFormData);
-
-  const handleChange = (name: string, value: string | number | null) => {
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-  };
-
-  const handleSubmit = (event: React.FormEvent) => {
-    event.preventDefault();
-    console.log(formData);
-    // Here you would typically send the data to your backend
-  };
-
   return (
-    <Container maxWidth="md">
-      <Box component="form" onSubmit={handleSubmit} sx={{ mt: 4 }}>
-        <Typography variant="h4" component="h1" gutterBottom align="center">
-          Darmowa wycena mieszkania
-        </Typography>
+    <>
+      <Container className="m-10">
+        <h1>Darmowa wycena mieszkań</h1>
+        <Formik
+          initialValues={defaultFormData}
+          onSubmit={(values, { setSubmitting }) => {
+            setTimeout(() => {
+              getPriceEstimate(values).then((price) => {
+                console.log("Price estimate:", price);
+              });
+              setSubmitting(false);
+            }, 400);
+          }}
+        >
+          {({ values, handleChange, handleSubmit }) => (
+            <form onSubmit={handleSubmit}>
+              <Location handleChange={handleChange} formValues={values} />
+              <Grid
+                container
+                spacing={4}
+                sx={{ paddingTop: 4, paddingBottom: 4 }}
+              >
+                <NumericField
+                  label="Powierzchnia [m²]"
+                  name="area"
+                  value={values.area}
+                  handleChange={handleChange}
+                />
+                <NumericField
+                  label="Liczba pokoi"
+                  name="rooms"
+                  value={values.rooms}
+                  handleChange={handleChange}
+                />
+                <NumericField
+                  label="Piętro"
+                  name="floor"
+                  value={values.floor}
+                  handleChange={handleChange}
+                />
+                <NumericField
+                  label="Ilość pięter w budynku"
+                  name="floorsInBuilding"
+                  value={values.floorsInBuilding}
+                  handleChange={handleChange}
+                />
+                <BoxcheckField
+                  label="taras/balkon"
+                  name="balcony"
+                  value={values.balcony}
+                  handleChange={handleChange}
+                />
+                <BoxcheckField
+                  label="oddzielna kuchnia"
+                  name="separate_kitchen"
+                  value={values.separate_kitchen}
+                  handleChange={handleChange}
+                />
+                <ListField
+                  label="Ogrzewanie"
+                  name="heating"
+                  options={HeatingDict}
+                  value={values.heating}
+                  handleChange={handleChange}
+                />
+                <Spacer n={1} />
 
-        <FormFields formData={formData} onChange={handleChange} />
+                <ListField
+                  label="Rynek"
+                  name="market"
+                  options={MarketDict}
+                  value={values.market}
+                  handleChange={handleChange}
+                />
+                <ListField
+                  label="Typ ogłoszenia"
+                  name="ad_type"
+                  options={AdDict}
+                  value={values.ad_type}
+                  handleChange={handleChange}
+                />
+                <ListField
+                  label="Typ własności"
+                  name="ownership"
+                  options={OwnershipDict}
+                  value={values.ownership}
+                  handleChange={handleChange}
+                />
+                <Spacer n={1} />
 
-        <Grid container>
-          <Grid item xs={12}>
-            <Button
-              type="submit"
-              variant="contained"
-              fullWidth
-              size="large"
-              sx={{ mt: 2 }}
-              color="primary"
-            >
-              Wyceniam
-            </Button>
-          </Grid>
-        </Grid>
-      </Box>
-      <Box sx={{ mb: 8 }} />
-      <Footer />
-    </Container>
+                <ListField
+                  label="Stan mieszkania"
+                  name="state"
+                  options={StateDict}
+                  value={values.state}
+                  handleChange={handleChange}
+                />
+                <ListField
+                  label="Dostępne od"
+                  name="available"
+                  options={AvailableDict}
+                  value={values.available}
+                  handleChange={handleChange}
+                />
+                <Spacer n={2} />
+                <BoxcheckField
+                  label="garaż/miejsce parkingowe"
+                  name="garage"
+                  value={values.garage}
+                  handleChange={handleChange}
+                />
+                <BoxcheckField
+                  label="winda"
+                  name="elevator"
+                  value={values.elevator}
+                  handleChange={handleChange}
+                />
+                <BoxcheckField
+                  label="piwnica/komórka lokatorska"
+                  name="basement"
+                  value={values.basement}
+                  handleChange={handleChange}
+                />
+              </Grid>
+              <Submit />
+            </form>
+          )}
+        </Formik>
+      </Container>
+    </>
   );
 };
 
