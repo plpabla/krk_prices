@@ -1,6 +1,6 @@
 # Status
 
-[![Node.js CI](https://github.com/plpabla/krk_prices/actions/workflows/frontent-build.yml/badge.svg)](https://github.com/plpabla/krk_prices/actions/workflows/frontent-build.yml)
+[![Frontent building](https://github.com/plpabla/krk_prices/actions/workflows/frontent-build.yml/badge.svg)](https://github.com/plpabla/krk_prices/actions/workflows/frontent-build.yml)
 
 # Setup - scrapper
 
