@@ -79,14 +79,15 @@ const FlatEstimationForm: React.FC = () => {
                   value={values.separate_kitchen}
                   handleChange={handleChange}
                 />
-                <Spacer n={2} />
                 <ListField
-                  label="Stan mieszkania"
-                  name="state"
-                  options={StateDict}
-                  value={values.state}
+                  label="Ogrzewanie"
+                  name="heating"
+                  options={HeatingDict}
+                  value={values.heating}
                   handleChange={handleChange}
                 />
+                <Spacer n={1} />
+
                 <ListField
                   label="Rynek"
                   name="market"
@@ -108,19 +109,20 @@ const FlatEstimationForm: React.FC = () => {
                   value={values.ownership}
                   handleChange={handleChange}
                 />
+                <Spacer n={1} />
+
+                <ListField
+                  label="Stan mieszkania"
+                  name="state"
+                  options={StateDict}
+                  value={values.state}
+                  handleChange={handleChange}
+                />
                 <ListField
                   label="Dostępne od"
                   name="available"
                   options={AvailableDict}
                   value={values.available}
-                  handleChange={handleChange}
-                />
-                <Spacer n={3} />
-                <ListField
-                  label="Ogrzewanie"
-                  name="heating"
-                  options={HeatingDict}
-                  value={values.heating}
                   handleChange={handleChange}
                 />
               </Grid>
