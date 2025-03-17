@@ -16,7 +16,7 @@ export async function getDistricts(city: string): Promise<string[]> {
     Wrocław: ["Stare Miasto", "Krzyki", "Fabryczna", "Psie Pole"],
     Poznań: ["Stare Miasto", "Jeżyce", "Wilda", "Grunwald"],
     Gdańsk: ["Stare Miasto", "Wrzeszcz", "Orunia", "Jasień"],
-    Łódź: ["Bałuty", "Polesie", "Widzew"],
+    Łódź: ["Bałuty", "Polesie", "Widzew", "Górna"],
   };
   // @ts-ignore
   return city in response ? response[city] : [];
