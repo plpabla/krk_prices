@@ -9,9 +9,11 @@ import {
   AdDict,
   OwnershipDict,
   AvailableDict,
+  HeatingDict,
 } from "@/types/enums";
 import { getPriceEstimate } from "@/api";
 import Submit from "@/components/form-fields/Submit";
+import Spacer from "@/components/form-fields/Spacer";
 import Location from "@/components/form-fields/Location";
 import NumericField from "@/components/form-fields/NumericField";
 import BoxcheckField from "@/components/form-fields/BoxcheckField";
@@ -41,6 +43,14 @@ const FlatEstimationForm: React.FC = () => {
                 spacing={4}
                 sx={{ paddingTop: 4, paddingBottom: 4 }}
               >
+                <ListField
+                  label="Typ ogłoszenia"
+                  name="ad_type"
+                  options={AdDict}
+                  value={values.ad_type}
+                  handleChange={handleChange}
+                />
+                <Spacer n={3} />
                 <NumericField
                   label="Powierzchnia [m²]"
                   name="area"
@@ -77,9 +87,7 @@ const FlatEstimationForm: React.FC = () => {
                   value={values.separate_kitchen}
                   handleChange={handleChange}
                 />
-                <Grid item xs={12} sm={6}>
-                  {/* This is an intentionally empty grid item for spacing */}
-                </Grid>
+                <Spacer n={2} />
                 <ListField
                   label="Stan mieszkania"
                   name="state"
@@ -113,6 +121,14 @@ const FlatEstimationForm: React.FC = () => {
                   name="available"
                   options={AvailableDict}
                   value={values.available}
+                  handleChange={handleChange}
+                />
+                <Spacer n={3} />
+                <ListField
+                  label="Ogrzewanie"
+                  name="heating"
+                  options={HeatingDict}
+                  value={values.heating}
                   handleChange={handleChange}
                 />
               </Grid>
