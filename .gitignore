@@ -3,7 +3,7 @@ venv/
 **/logs/**
 
 *.csv
-!otodom.csv
+!data/otodom.csv
 *.ipynb_checkpoints/
 *~
 
@@ -182,3 +182,5 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+
+*.mjs
