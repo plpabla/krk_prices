@@ -1,7 +1,9 @@
 import { CssBaseline, ThemeProvider, createTheme } from "@mui/material";
 import { Routes, Route } from "react-router-dom";
+import { Container } from "@mui/material";
 
 import FlatEstimationForm from "@/components/FlatEstimationForm";
+import PriceEstimationPage from "@/components/PriceEstimationPage";
 import Footer from "@/components/Footer";
 import Navbar from "./components/Navbar";
 
@@ -17,12 +19,14 @@ function App() {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <Navbar />
-      <Routes>
-        <Route path="/" element={<FlatEstimationForm />} />
-        <Route path="/demo" element={<h1>test</h1>} />
-      </Routes>
-      <Footer />
+      <Container className="m-10">
+        <Navbar />
+        <Routes>
+          <Route path="/" element={<FlatEstimationForm />} />
+          <Route path="/estimate" element={<PriceEstimationPage />} />
+        </Routes>
+        <Footer />
+      </Container>
     </ThemeProvider>
   );
 }
