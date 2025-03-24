@@ -1,10 +1,12 @@
-from typing import Union
-
 from fastapi import FastAPI
 
-app = FastAPI()
+from routes import estimate
+
+app = FastAPI(title="House Price Estimator", version="0.1.0")
+app.include_router(estimate.router)
 
 
-@app.get("/")
-def read_root():
-    return {"Hello": "World"}
+if __name__ == "__main__":
+    import uvicorn
+
+    uvicorn.run(app, host="localhost", port=8000)
