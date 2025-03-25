@@ -8,6 +8,7 @@ router = APIRouter(prefix="/cities")
 
 @router.get("/")
 async def get_cities() -> list[City]:
+    print(">>> Getting cities")
     return [
         City(name="Kraków"),
         City(name="Warszawa"),
@@ -18,6 +19,7 @@ async def get_cities() -> list[City]:
 
 @router.get("/{city_name}")
 async def get_city(city_name: str) -> list[DistrictOutput]:
+    print(f">>> Getting districts for: {city_name}")
     city = City(name=city_name)
     return [
         DistrictOutput.model_validate(
