@@ -6,7 +6,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import MultiLabelBinarizer
 from datetime import date, timedelta
 
-
+#todo utworz skrypt , zeny podzielic na train & test
 # Wczytaj dane z pliku CSV
 data = pd.read_csv('../../data/otodom.csv')
 
@@ -41,6 +41,8 @@ def preprocess_data(data):
             return 0
         match = re.search(r'\d+', value)
         return int(match.group()) if match else np.nan
+
+    data['floor'] = data['floor'].apply(process_floor)
 
     # Zamiana wartości NaN w "floor" na najczęściej występującą wartość
     data.loc[:, "floor"] = data["floor"].fillna(data["floor"].mode()[0])
@@ -124,6 +126,9 @@ def preprocess_data(data):
     # oraz dat późniejszych niż 2 lata od dzisiaj na dzisiejszą datę
     data['available'] = data['available'].apply(lambda x: min(max(x, date.today()), date.today() + timedelta(days=730)))
 
+    # Konwersja 'available' na liczbę dni od 1 stycznia bierzącego roku
+    data['available'] = (pd.to_datetime(data['available'], errors='coerce') - pd.to_datetime(date(date.today().year, 1, 1))).dt.days
+
     # One-Hot Encoding
     data['utilities'] = data['utilities'].apply(ast.literal_eval)
     mlb = MultiLabelBinarizer()
@@ -138,14 +143,28 @@ def preprocess_data(data):
         data[encoded.columns] = data[encoded.columns].astype(int)
 
     # Usunięcie zbędnych kolumn
-    data.drop(columns=['utilities', 'heating', 'state', 'market', 'ownership', 'location', 'ad_type',
+    data.drop(columns=['utilities', 'heating', 'state', 'market', 'ownership', 'location', 'ad_type', 'scrapped_date',
                         'slug', 'url', 'name','avg_price_m2','location_district'], inplace=True)
 
     return data
 
+
 # Przetworzenie i zapis zestawów train/test
 train = preprocess_data(train)
 test = preprocess_data(test)
+
+# Porównanie kolumn i dodanie brakujących kolumn z zerami
+for col in train.columns:
+    if col not in test.columns:
+        test[col] = 0
+
+for col in test.columns:
+    if col not in train.columns:
+        train[col] = 0
+
+# Zapewnienie, że kolumny w train i test są w tej samej kolejności
+train = train[sorted(train.columns)]
+test = test[sorted(test.columns)]
 
 ##todo make path operating system independent with os.path.join
 train.to_csv('../../data/otodom_train.csv', index=False)
