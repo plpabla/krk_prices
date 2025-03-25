@@ -1,25 +1,29 @@
 import { FormData } from "@/types/form";
+import { City } from "@/types/backend";
+
+// TODO: maybe better read it form env variable so I can have different API_URL for production and development
+const API_URL = "http://localhost:8001";
 
 export async function getCities(): Promise<string[]> {
-  await new Promise((resolve) => setTimeout(resolve, 1000));
-  const response: { [key: string]: string[] } = {
-    cities: ["Kraków", "Warszawa", "Wrocław", "Poznań", "Gdańsk", "Łódź"],
-  };
-  return response.cities;
+  try {
+    const response = await fetch(`${API_URL}/cities/`);
+    const data = await response.json();
+    return data.map((item: City) => item.name);
+  } catch (error) {
+    console.error(error);
+    return [];
+  }
 }
 
 export async function getDistricts(city: string): Promise<string[]> {
-  await new Promise((resolve) => setTimeout(resolve, 1000));
-  const response = {
-    Kraków: ["Stare Miasto", "Nowa Huta", "Krowodrza", "Podgórze"],
-    Warszawa: ["Śródmieście", "Mokotów", "Ursynów", "Wola"],
-    Wrocław: ["Stare Miasto", "Krzyki", "Fabryczna", "Psie Pole"],
-    Poznań: ["Stare Miasto", "Jeżyce", "Wilda", "Grunwald"],
-    Gdańsk: ["Stare Miasto", "Wrzeszcz", "Orunia", "Jasień"],
-    Łódź: ["Bałuty", "Polesie", "Widzew", "Górna"],
-  };
-  // @ts-ignore
-  return city in response ? response[city] : [];
+  try {
+    const response = await fetch(`${API_URL}/cities/${city}/`);
+    const data = await response.json();
+    return data.map((item: City) => item.name);
+  } catch (error) {
+    console.error(error);
+    return [];
+  }
 }
 
 export async function getPriceEstimate(data: FormData): Promise<number> {
