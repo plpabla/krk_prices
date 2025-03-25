@@ -9,7 +9,7 @@ router = APIRouter(prefix="/cities")
 @router.get("/")
 async def get_cities() -> list[City]:
     return [
-        City(name="Krakow"),
+        City(name="Kraków"),
         City(name="Warszawa"),
         City(name="Wroclaw"),
         City(name="Gdańsk"),

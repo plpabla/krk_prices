@@ -1,7 +1,12 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 
 from routes import estimate, cities
+
+origins = [
+    "http://localhost:5173",
+]
 
 
 @asynccontextmanager
@@ -16,6 +21,14 @@ async def lifespan(app: FastAPI):
 app = FastAPI(title="House Price Estimator", version="0.1.0", lifespan=lifespan)
 app.include_router(estimate.router)
 app.include_router(cities.router)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 if __name__ == "__main__":
