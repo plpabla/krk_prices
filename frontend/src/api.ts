@@ -30,6 +30,17 @@ export async function getDistricts(city: string): Promise<string[]> {
 export async function getPriceEstimate(data: FormData): Promise<void> {
   // TODO: Send the data to the backend and get the price estimate
   // For now, just return a random number
+  const response = await fetch(`${API_URL}/estimate`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(data),
+  });
+
+  const res = await response.json();
+  console.log(res);
+
   await new Promise((resolve) => setTimeout(resolve, 1000));
   const { setPrice } = usePriceStore.getState();
   setPrice(Math.round(Math.random() * 1000) * 1000);
