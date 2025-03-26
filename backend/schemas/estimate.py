@@ -63,7 +63,6 @@ class EstimateInput(BaseModel):
     basement: bool
 
     rent: float | None = None
-    extra_info: str
 
 
 class EstimateOutput(BaseModel):
