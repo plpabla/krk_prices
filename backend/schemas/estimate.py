@@ -2,41 +2,41 @@ from pydantic import BaseModel
 from enum import Enum
 
 
-class StateType(str, Enum):
-    READY_TO_MOVE = "READY_TO_MOVE"
-    NEEDS_RENOVATION = "NEEDS_RENOVATION"
-    NEEDS_FINISHING = "NEEDS_FINISHING"
-
-
 class HeatingType(str, Enum):
-    DISTRICT = "DISTRICT"
-    GAS = "GAS"
-    ELECTRIC = "ELECTRIC"
-    OTHER = "OTHER"
+    DISTRICT = "miejskie"
+    GAS = "gazowe"
+    ELECTRIC = "elektryczne"
+    OTHER = "inne"
+
+
+class StateType(str, Enum):
+    READY_TO_MOVE = "Do zamieszkania"
+    NEEDS_RENOVATION = "Do remontu"
+    NEEDS_FINISHING = "Do wykończenia"
 
 
 class MarketType(str, Enum):
-    PRIMARY = "PRIMARY"
-    SECONDARY = "SECONDARY"
+    PRIMARY = "Pierwotny"
+    SECONDARY = "Wtórny"
 
 
 class OwnershipType(str, Enum):
-    OWNERSHIP = "OWNERSHIP"
-    COOPERATIVE = "COOPERATIVE"
-    OTHER = "OTHER"
+    OWNERSHIP = "Własnościowe"
+    COOPERATIVE = "Spoldzielcze"
+    OTHER = "Inne"
 
 
 class AdType(str, Enum):
-    PRIVATE = "PRIVATE"
-    AGENCY = "AGENCY"
+    PRIVATE = "prywatny"
+    AGENCY = "biuro"
 
 
 class AvailableType(str, Enum):
-    NOW = "NOW"
-    Y2025 = "Y2025"
-    Y2026 = "Y2026"
-    Y2027 = "Y2027"
-    Y2028 = "Y2028"
+    NOW = "od zaraz"
+    Y2025 = "2025"
+    Y2026 = "2026"
+    Y2027 = "2027"
+    Y2028 = "2028+"
 
 
 class EstimateInput(BaseModel):

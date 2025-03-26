@@ -13,7 +13,7 @@ export enum StateType {
 
 export enum MarketType {
   PRIMARY = "Pierwotny",
-  SECONDARY = "Wtorny",
+  SECONDARY = "Wtórny",
 }
 
 export enum OwnershipType {

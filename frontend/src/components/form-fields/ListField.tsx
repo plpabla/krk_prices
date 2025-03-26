@@ -1,4 +1,11 @@
-import { Grid, FormControl, Select, InputLabel, MenuItem } from "@mui/material";
+import {
+  Grid,
+  FormControl,
+  Select,
+  InputLabel,
+  MenuItem,
+  fabClasses,
+} from "@mui/material";
 import { FormFieldProps } from "@/components/form-fields/Common";
 
 interface ListFieldProps extends FormFieldProps {
@@ -20,7 +27,7 @@ export default function ListField({
       <FormControl fullWidth>
         <InputLabel id={label}>{label}</InputLabel>
         <Select
-          value={value}
+          value={value || ""}
           labelId={label}
           label={label}
           name={name}
@@ -28,7 +35,7 @@ export default function ListField({
           onChange={handleChange}
         >
           {Object.entries(options).map(([key, value]) => (
-            <MenuItem key={key} value={key}>
+            <MenuItem key={value} value={value}>
               {value}
             </MenuItem>
           ))}

@@ -4,6 +4,7 @@ import {
   MarketType,
   OwnershipType,
   AdType,
+  AvailableDict,
 } from "./enums";
 
 export interface FormData {
@@ -31,7 +32,6 @@ export interface FormData {
   basement: boolean;
 
   rent: number | null;
-  extra_info: string;
 }
 
 export const defaultFormData: FormData = {
@@ -52,9 +52,8 @@ export const defaultFormData: FormData = {
   state: StateType.READY_TO_MOVE,
   market: MarketType.SECONDARY,
   ownership: OwnershipType.OWNERSHIP,
-  available: "",
+  available: AvailableDict.NOW,
   ad_type: AdType.PRIVATE,
-  extra_info: "",
 
   garage: false,
   elevator: false,
