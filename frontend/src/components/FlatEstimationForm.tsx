@@ -29,8 +29,7 @@ const FlatEstimationForm: React.FC = () => {
         initialValues={defaultFormData}
         onSubmit={(values, { setSubmitting }) => {
           setTimeout(() => {
-            getPriceEstimate(values).then((price) => {
-              console.log("Price estimate:", price);
+            getPriceEstimate(values).then(() => {
               navigate("/estimate", { replace: true });
             });
             setSubmitting(false);

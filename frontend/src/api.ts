@@ -1,5 +1,6 @@
 import { FormData } from "@/types/form";
 import { City } from "@/types/backend";
+import { usePriceStore } from "@/state/price";
 
 // TODO: maybe better read it form env variable so I can have different API_URL for production and development
 const API_URL = "http://localhost:8001";
@@ -26,8 +27,10 @@ export async function getDistricts(city: string): Promise<string[]> {
   }
 }
 
-export async function getPriceEstimate(data: FormData): Promise<number> {
+export async function getPriceEstimate(data: FormData): Promise<void> {
+  // TODO: Send the data to the backend and get the price estimate
+  // For now, just return a random number
   await new Promise((resolve) => setTimeout(resolve, 1000));
-  alert(JSON.stringify(data, null, 2));
-  return Math.floor(Math.random() * 1000000);
+  const { setPrice } = usePriceStore.getState();
+  setPrice(Math.round(Math.random() * 1000) * 1000);
 }
