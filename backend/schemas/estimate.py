@@ -62,7 +62,7 @@ class EstimateInput(BaseModel):
     elevator: bool
     basement: bool
 
-    rent: float | None = None
+    rent: float | None = None  # not provided on frontend
 
 
 class EstimateOutput(BaseModel):

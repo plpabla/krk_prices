@@ -5,3 +5,7 @@ export type City = {
 export type District = {
   name: string;
 };
+
+export type PriceEstimate = {
+  price: number;
+};
