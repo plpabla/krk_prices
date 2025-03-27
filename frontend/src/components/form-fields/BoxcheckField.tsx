@@ -21,7 +21,6 @@ export default function BoxcheckField({
         // @ts-ignore
         onChange={handleChange}
         sx={{ width: "100%" }}
-        inputProps={{ "aria-label": "controlled" }}
       />
     </Grid>
   );

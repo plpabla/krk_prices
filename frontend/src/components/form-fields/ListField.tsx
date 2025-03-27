@@ -20,15 +20,15 @@ export default function ListField({
       <FormControl fullWidth>
         <InputLabel id={label}>{label}</InputLabel>
         <Select
-          value={value}
+          value={value || ""}
           labelId={label}
           label={label}
           name={name}
           // @ts-ignore
           onChange={handleChange}
         >
-          {Object.entries(options).map(([key, value]) => (
-            <MenuItem key={key} value={key}>
+          {Object.entries(options).map(([_, value]) => (
+            <MenuItem key={value} value={value}>
               {value}
             </MenuItem>
           ))}
