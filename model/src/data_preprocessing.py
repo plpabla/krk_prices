@@ -6,11 +6,6 @@ import sys
 from sklearn.preprocessing import MultiLabelBinarizer
 from datetime import date, timedelta
 
-from add_district import add_district
-from create_train_test import create_train_test
-
-# TODO: keep only data_preprocessing.py and create a separate script for a full pipeline
-
 
 def _drop_offers_without_price(data):
     return data.dropna(subset=["price"])
@@ -221,38 +216,5 @@ def preprocess_data(data):
 
 
 if __name__ == "__main__":
-    if len(sys.argv) > 1:
-        filename = sys.argv[1]
-    else:
-        print("Please provide a filename as argument")
-        print("Usage: python create_train_test.py <filename>")
-        sys.exit(1)
-
-    filename = add_district(filename)
-    train_filename, test_filename = create_train_test(filename)
-
-    train = pd.read_csv(train_filename)
-    test = pd.read_csv(test_filename)
-
-    # Przetworzenie i zapis zestawów train/test
-    train = preprocess_data(train)
-    test = preprocess_data(test)
-
-    # Porównanie kolumn i dodanie brakujących kolumn z zerami
-    for col in train.columns:
-        if col not in test.columns:
-            test[col] = 0
-
-    for col in test.columns:
-        if col not in train.columns:
-            train[col] = 0
-
-    # Zapewnienie, że kolumny w train i test są w tej samej kolejności
-    train = train[sorted(train.columns)]
-    test = test[sorted(test.columns)]
-
-    ##todo make path operating system independent with os.path.join
-    train.to_csv(train_filename, index=False)
-    test.to_csv(test_filename, index=False)
-
-    print("✅ Dane przetworzone i zapisane jako train.csv oraz test.csv")
+    print("This script is not intended to be run directly, run pipeline script instead")
+    sys.exit(1)
