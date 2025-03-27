@@ -9,18 +9,21 @@ train_data = pd.read_csv("../data/otodom_district_train.csv")
 test_data = pd.read_csv("../data/otodom_district_test.csv")
 
 # Wybór cech i zmiennej docelowej
-X_train = train_data.drop(columns=["price"])  # Załóżmy, że przewidujemy 'price'
+X_train = train_data.drop(
+    columns=["price", "price_m2"]
+)  # Załóżmy, że przewidujemy 'price'. Musimy też usunąć 'price_m2'
 y_train = train_data["price"]
-X_test = test_data.drop(columns=["price"])
+X_test = test_data.drop(columns=["price", "price_m2"])
 y_test = test_data["price"]
 
 # Inicjalizacja modelu
 model = xgb.XGBRegressor(
     objective="reg:squarederror",
-    n_estimators=10000,
+    n_estimators=10_000,
     learning_rate=0.01,
     max_depth=2,
     random_state=42,
+    n_jobs=-1,
 )
 
 # Trenowanie modelu
