@@ -3,7 +3,7 @@ venv/
 **/logs/**
 
 *.csv
-!data/otodom.csv
+!model/data/otodom.csv
 *.ipynb_checkpoints/
 *~
 
