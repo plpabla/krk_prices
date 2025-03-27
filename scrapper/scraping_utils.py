@@ -4,7 +4,7 @@ import pandas as pd
 import re
 import json
 from typing import Optional, Dict, Any
-from scrapper.data_types import RealEstateListing
+from data_types import RealEstateListing
 
 BASE_URL = "https://www.otodom.pl"
 CITY = "krakow"

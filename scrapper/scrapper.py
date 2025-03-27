@@ -1,5 +1,5 @@
 import argparse
-from scrapper.scraping_utils import get_n_pages
+from scraping_utils import get_n_pages
 import pandas as pd
 
 
