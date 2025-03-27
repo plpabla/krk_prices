@@ -1,11 +1,4 @@
-import {
-  Grid,
-  FormControl,
-  Select,
-  InputLabel,
-  MenuItem,
-  fabClasses,
-} from "@mui/material";
+import { Grid, FormControl, Select, InputLabel, MenuItem } from "@mui/material";
 import { FormFieldProps } from "@/components/form-fields/Common";
 
 interface ListFieldProps extends FormFieldProps {
@@ -34,7 +27,7 @@ export default function ListField({
           // @ts-ignore
           onChange={handleChange}
         >
-          {Object.entries(options).map(([key, value]) => (
+          {Object.entries(options).map(([_, value]) => (
             <MenuItem key={value} value={value}>
               {value}
             </MenuItem>
