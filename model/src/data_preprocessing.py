@@ -2,32 +2,19 @@ import pandas as pd
 import numpy as np
 import re
 import ast
-from sklearn.model_selection import train_test_split
+import os
 from sklearn.preprocessing import MultiLabelBinarizer
 from datetime import date, timedelta
 
-# todo utworz skrypt , zeny podzielic na train & test
-# Wczytaj dane z pliku CSV
-data = pd.read_csv("../data/otodom.csv")
+from add_district import add_district
+from create_train_test import create_train_test
 
-# Dodaj kolumnę z dzielnicą
-data["location"] = data["location"].apply(ast.literal_eval)
-data["location_district"] = data["location"].apply(
-    lambda x: x[1] if isinstance(x, list) and len(x) > 1 else None
-)
+filename = os.path.join("..", "data", "krakow.csv")
+filename = add_district(filename)
+train_filename, test_filename = create_train_test(filename)
 
-# Usuń wiersze, gdzie 'location_district' jest NaN
-data = data.dropna(subset=["location_district"])
-
-# Usuń dzielnice z pojedynczym wystąpieniem
-data = data[
-    data.groupby("location_district")["location_district"].transform("count") > 1
-]
-
-# Podział na train i test (stratyfikacja względem dzielnicy)
-train, test = train_test_split(
-    data, test_size=0.2, random_state=42, stratify=data["location_district"]
-)
+train = pd.read_csv(train_filename)
+test = pd.read_csv(test_filename)
 
 
 def preprocess_data(data):
