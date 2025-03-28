@@ -24,8 +24,8 @@ if __name__ == "__main__":
     test = pd.read_csv(test_filename)
 
     # Przetworzenie i zapis zestawów train/test
-    train = preprocess_data(train)
-    test = preprocess_data(test)
+    train = preprocess_data(train, is_train=True)
+    test = preprocess_data(test, is_train=False)
 
     # Porównanie kolumn i dodanie brakujących kolumn z zerami
     for col in train.columns:
