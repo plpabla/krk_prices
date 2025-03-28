@@ -5,6 +5,7 @@ import ast
 import sys
 from sklearn.preprocessing import MultiLabelBinarizer
 from datetime import date, timedelta
+import warnings
 
 # TODO: for test set we cannot make the same preprocessing steps as for train set
 
@@ -169,11 +170,14 @@ def _transform_available_date(data):
     return data
 
 
-def _utilities_one_hot_encoding(data):
-    # TODO: create a list of utilities I'd like to encode
+def _utilities_one_hot_encoding(data, items):
     data["utilities"] = data["utilities"].apply(ast.literal_eval)
-    mlb = MultiLabelBinarizer()
-    utilities_encoded = mlb.fit_transform(data["utilities"])
+    mlb = MultiLabelBinarizer(classes=items)
+
+    # We are fully aware that we are skipping some classes
+    with warnings.catch_warnings():
+        warnings.filterwarnings("ignore", message="unknown class")
+        utilities_encoded = mlb.fit_transform(data["utilities"])
     utilities_df = pd.DataFrame(
         utilities_encoded, columns=["utilities_" + col for col in mlb.classes_]
     )
@@ -230,8 +234,22 @@ def preprocess_data(data, is_train=True):
     data = _transform_available_date(data)
 
     # One-Hot Encoding
-    # TODO: pass the list of utilities I want to encode (the ones I'm getting from a form?)
-    data = _utilities_one_hot_encoding(data)
+    utilities = [
+        "balkon",
+        "taras",
+        "oddzielna kuchnia",
+        "piwnica",
+        "pom. użytkowe",
+        "winda",
+    ]
+    utilities_outside_the_form = [
+        "dwupoziomowe",
+        "garaż/miejsce parkingowe",
+        "klimatyzacja",
+        "meble",
+        "ogródek",
+    ]
+    data = _utilities_one_hot_encoding(data, utilities)
 
     categorical_features = [
         "heating",
