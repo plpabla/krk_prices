@@ -22,7 +22,7 @@ def run():
     # Inicjalizacja modelu
     model = xgb.XGBRegressor(
         objective="reg:squarederror",
-        n_estimators=1_000,
+        n_estimators=10_000,
         learning_rate=0.01,
         max_depth=8,
         random_state=42,
