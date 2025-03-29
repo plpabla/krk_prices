@@ -2,8 +2,8 @@ import pandas as pd
 import xgboost as xgb
 import pickle
 from sklearn.metrics import mean_squared_error, r2_score
+from sklearn.model_selection import GridSearchCV
 import numpy as np
-import sys
 
 
 def run():
@@ -19,6 +19,14 @@ def run():
     X_test = test_data.drop(columns=["price", "price_m2"])
     y_test = test_data["price"]
 
+    params_grid = {
+        "max_depth": [10, 16],
+        "learning_rate": [0.1, 0.01, 0.001],
+        "n_estimators": [5000],
+        "subsample": [0.2, 0.5, 1.0],
+        "colsample_bytree": [0.1, 1.0],
+    }
+
     # Inicjalizacja modelu
     model = xgb.XGBRegressor(
         objective="reg:squarederror",
@@ -29,8 +37,20 @@ def run():
         n_jobs=-1,
     )
 
+    model_grid = GridSearchCV(
+        estimator=model,
+        param_grid=params_grid,
+        scoring="neg_mean_squared_error",
+        cv=3,
+        verbose=1,
+        n_jobs=-1,
+    )
+
     # Trenowanie modelu
-    model.fit(X_train, y_train)
+    model_grid.fit(X_train, y_train)
+    model = model_grid.best_estimator_
+    print("  Najlepsze parametry: ", model_grid.best_params_)
+    print("  Najlepszy wynik: ", model_grid.best_score_)
 
     # Ocena modelu
     predictions = model.predict(X_test)
