@@ -11,8 +11,9 @@ origins = [
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # any preprocessing here
     print(">>> Starting the app")
+    from model import model
+
     yield
     # any cleanup here
     print(">>> Stopping the app")
