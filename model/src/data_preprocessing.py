@@ -280,6 +280,32 @@ def preprocess_data(data, is_train=True):
         inplace=True,
     )
 
+    extra_columns_to_drop = [
+        "available",
+        "heating_boiler_room",
+        "heating_electrical",
+        "heating_gas",
+        "heating_other",
+        "heating_tiled_stove",
+        "heating_urban",
+        "market_primary",
+        "market_secondary",
+        "ownership_full_ownership",
+        "ownership_limited_ownership",
+        "ownership_share",
+        "ownership_usufruct",
+        "rent",
+        "state_ready_to_use",
+        "state_to_completion",
+        "state_to_renovation",
+    ]
+
+    # Only drop columns that exist in the DataFrame
+    extra_columns_to_drop = [
+        col for col in extra_columns_to_drop if col in data.columns
+    ]
+    data.drop(columns=extra_columns_to_drop, inplace=True)
+
     return data
 
 
