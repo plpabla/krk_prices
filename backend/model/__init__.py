@@ -23,6 +23,7 @@ class Model:
     def predict(self, data: EstimateInput):
         """Make prediction using the loaded model."""
         data = self.convert_to_xgboost_input(data)
+        print(">>> Raw data for prediction:", data)
         return self._model.predict(data)
 
     def get_districts(self) -> list[str]:
