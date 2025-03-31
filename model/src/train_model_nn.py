@@ -1,10 +1,7 @@
 import pandas as pd
-import tensorflow as tf
-from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Dense, Dropout
-from tensorflow.keras.optimizers import Adam
 from sklearn.metrics import mean_squared_error, r2_score
 from sklearn.model_selection import train_test_split
+from sklearn.neural_network import MLPRegressor
 import numpy as np
 
 
@@ -21,35 +18,21 @@ def run():
     X_test = test_data.drop(columns=["price", "price_m2"])
     y_test = test_data["price"]
 
-    # Podział danych na zbiór walidacyjny
-    X_train, X_val, y_train, y_val = train_test_split(
-        X_train, y_train, test_size=0.2, random_state=42
+    model = MLPRegressor(
+        hidden_layer_sizes=[100, 100, 100, 100],
+        activation="relu",
+        solver="adam",
+        alpha=0.001,
+        batch_size="auto",
+        learning_rate_init=0.001,
+        max_iter=1000,
+        random_state=42,
     )
 
-    # Inicjalizacja modelu sieci neuronowej
-    model = Sequential(
-        [
-            Dense(128, activation="relu", input_shape=(X_train.shape[1],)),
-            Dense(64, activation="relu"),
-            Dense(1),  # Wyjście dla regresji
-        ]
-    )
-
-    model.compile(
-        optimizer=Adam(learning_rate=1e-6), loss="mse", metrics=["mse", "mae"]
-    )
-
-    # Trenowanie modelu
-    history = model.fit(
-        X_train,
-        y_train,
-        validation_data=(X_val, y_val),
-        epochs=10,
-        verbose=1,
-    )
+    model.fit(X_train, y_train)
 
     # Ocena modelu
-    predictions = model.predict(X_test).flatten()
+    predictions = model.predict(X_test)
 
     # Obliczenie MSE, RMSE i R²
     mse = mean_squared_error(y_test, predictions)
@@ -61,9 +44,9 @@ def run():
     print(f"  R-squared (R²): {r2}")
 
     # Zapisanie modelu do pliku
-    model.save("../out/neural_network_model.h5")
+    # model.save("../out/neural_network_model.h5")
 
-    print("✅ Model sieci neuronowej wytrenowany i zapisany!")
+    print("✅ Model sieci neuronowej wytrenowany i NIE zapisany!")
 
 
 if __name__ == "__main__":
