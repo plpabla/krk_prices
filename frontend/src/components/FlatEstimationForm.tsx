@@ -3,7 +3,7 @@ import { Formik } from "formik";
 import { Grid } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 
-import { defaultFormData } from "@/types/form";
+import { useFormStore } from "@/state/formData";
 import {
   StateDict,
   MarketDict,
@@ -22,13 +22,15 @@ import ListField from "@/components/form-fields/ListField";
 
 const FlatEstimationForm: React.FC = () => {
   const navigate = useNavigate();
+  const { formData, setFormData } = useFormStore();
   return (
     <>
       <h1>Darmowa wycena mieszkań</h1>
       <Formik
-        initialValues={defaultFormData}
+        initialValues={formData}
         onSubmit={(values, { setSubmitting }) => {
           setTimeout(() => {
+            setFormData(values);
             getPriceEstimate(values).then(() => {
               navigate("/estimate", { replace: true });
             });
