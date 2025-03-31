@@ -214,19 +214,23 @@ def preprocess_data(data, is_train=True):
         data = _drop_offers_without_building_floors(data)
 
     # Przetwarzanie liczby pokoi
+    # FIXME: now I'm getting only empty values here... (so I overwrite them with 99999)
     if is_train:
         data = _fill_empty_rooms(data)
     else:
         data = _drop_empty_rooms(data)
+    data.loc[:, "rooms"] = 99999
 
     # TODO: try to remove rent as it is redundant with area (strong correlation)
     data = _fill_rent(data)
 
     # TODO: or utilize data from train set
+    # FIXME: not filled in
     if is_train:
         data = _fill_build_year_with_district_median(data)
     else:
         data = _drop_offers_without_build_year(data)
+    data.loc[:, "build_year"] = 99999
 
     # TODO: is it used anywhere?
     data = _add_price_m2_column(data)
@@ -310,5 +314,8 @@ def preprocess_data(data, is_train=True):
 
 
 if __name__ == "__main__":
+    # data = pd.read_csv("model/data/krakow_district_train.csv")
+    # preprocess_data(data, is_train=True)
+
     print("This script is not intended to be run directly, run pipeline script instead")
     sys.exit(1)
