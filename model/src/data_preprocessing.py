@@ -191,10 +191,16 @@ def preprocess_data(data: pd.DataFrame, is_train=True):
     else:
         data = _drop_price_outlier_rows(data, (0, 1000000))
 
+    # TODO: or utilize data from train set
+    if is_train:
+        data = _clear_wrong_build_year(data)
+        data = _fill_build_year_with_district_median(data)
+    else:
+        data = _clear_wrong_build_year(data)
+
     # Update index after cleanup
     data.reset_index(drop=True, inplace=True)
 
-    data = _clear_wrong_build_year(data)
     data["floor"] = data["floor"].apply(_process_floor)
     # data = _fill_empty_floor(data)
     if is_train:
@@ -209,15 +215,6 @@ def preprocess_data(data: pd.DataFrame, is_train=True):
         data = _fill_empty_rooms(data)
     else:
         data = _drop_empty_rooms(data)
-    # data.loc[:, "rooms"] = 99999
-
-    # TODO: or utilize data from train set
-    # FIXME: not filled in
-    if is_train:
-        data = _fill_build_year_with_district_median(data)
-    else:
-        data = _drop_offers_without_build_year(data)
-    # data.loc[:, "build_year"] = 99999
 
     # TODO: is it used anywhere?
     data = _add_price_m2_column(data)
