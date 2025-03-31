@@ -108,28 +108,6 @@ def _drop_empty_rooms(data):
     return data
 
 
-def _fill_rent(data):
-    # Podstawowe dane dla Krakowa
-    min_rent_per_m2 = 6.64
-    max_rent_per_m2 = 16.96
-
-    # Krok 1: Sprawdzanie, czy rent mieści się w przedziale 6,64 * area < rent < 16,96 * area
-    data["rent"] = data.apply(
-        lambda row: (
-            row["rent"]
-            if (
-                min_rent_per_m2 * row["area"]
-                < row["rent"]
-                < max_rent_per_m2 * row["area"]
-            )
-            else 10 * row["area"]
-        ),
-        axis=1,
-    )
-
-    return data
-
-
 def _fill_build_year_with_district_median(data):
     data.loc[:, "build_year"] = data["build_year"].fillna(
         data.groupby("location_district")["build_year"].transform("median")
@@ -193,7 +171,7 @@ def _columns_one_hot_encoding(data, columns):
     return data
 
 
-def preprocess_data(data, is_train=True):
+def preprocess_data(data: pd.DataFrame, is_train=True):
     data = _drop_offers_without_price(data)
     data = _drop_tbs(data)
     # TODO: move is_train logic into one place
@@ -219,10 +197,7 @@ def preprocess_data(data, is_train=True):
         data = _fill_empty_rooms(data)
     else:
         data = _drop_empty_rooms(data)
-    data.loc[:, "rooms"] = 99999
-
-    # TODO: try to remove rent as it is redundant with area (strong correlation)
-    data = _fill_rent(data)
+    # data.loc[:, "rooms"] = 99999
 
     # TODO: or utilize data from train set
     # FIXME: not filled in
@@ -230,12 +205,10 @@ def preprocess_data(data, is_train=True):
         data = _fill_build_year_with_district_median(data)
     else:
         data = _drop_offers_without_build_year(data)
-    data.loc[:, "build_year"] = 99999
+    # data.loc[:, "build_year"] = 99999
 
     # TODO: is it used anywhere?
     data = _add_price_m2_column(data)
-
-    data = _transform_available_date(data)
 
     # One-Hot Encoding
     utilities = [
@@ -253,6 +226,7 @@ def preprocess_data(data, is_train=True):
         "meble",
         "ogródek",
     ]
+    data.reset_index(drop=True, inplace=True)
     data = _utilities_one_hot_encoding(data, utilities)
 
     categorical_features = [
