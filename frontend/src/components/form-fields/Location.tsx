@@ -1,8 +1,9 @@
 import { TextField, Grid, Select, MenuItem } from "@mui/material";
 import { useState, useEffect } from "react";
-import { getCities, getDistricts } from "@/api";
 import { ResponsiveLabel } from "@/components/form-fields/Common";
 import { FormData } from "@/types/form";
+
+import { getCities, getDistricts } from "@/api";
 
 interface LocationProps {
   formValues: FormData;
@@ -43,6 +44,7 @@ function ListItems({
 export default function Location({ handleChange, formValues }: LocationProps) {
   const [cities, setCities] = useState<string[]>([]);
   const [districts, setDistricts] = useState<string[]>([]);
+  const [touched, setTouched] = useState<boolean>(false);
 
   useEffect(() => {
     getCities().then((cities) => {
@@ -83,6 +85,16 @@ export default function Location({ handleChange, formValues }: LocationProps) {
           name="location"
           onChange={handleChange}
           value={formValues.location}
+          required
+          error={touched && !formValues.location}
+          helperText={
+            touched && !formValues.location ? "To pole jest wymagane" : ""
+          }
+          onBlur={() => {
+            if (!touched) {
+              setTouched(true);
+            }
+          }}
         />
       </Grid>
     </Grid>

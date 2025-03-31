@@ -29,8 +29,7 @@ const FlatEstimationForm: React.FC = () => {
         initialValues={defaultFormData}
         onSubmit={(values, { setSubmitting }) => {
           setTimeout(() => {
-            getPriceEstimate(values).then((price) => {
-              console.log("Price estimate:", price);
+            getPriceEstimate(values).then(() => {
               navigate("/estimate", { replace: true });
             });
             setSubmitting(false);
@@ -148,6 +147,8 @@ const FlatEstimationForm: React.FC = () => {
               />
             </Grid>
             <Submit />
+            {/* Spacer to make the form not stick to the bottom */}
+            <div style={{ marginBottom: "100px" }} />
           </form>
         )}
       </Formik>

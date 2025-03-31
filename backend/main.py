@@ -1,15 +1,38 @@
-from typing import Union
-
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from contextlib import asynccontextmanager
 
-app = FastAPI()
+from routes import estimate, cities
+
+origins = [
+    "http://localhost:5173",
+]
 
 
-@app.get("/")
-def read_root():
-    return {"Hello": "World"}
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    print(">>> Starting the app")
+    from model import model
+
+    yield
+    # any cleanup here
+    print(">>> Stopping the app")
 
 
-@app.get("/items/{item_id}")
-def read_item(item_id: int, q: Union[str, None] = None):
-    return {"item_id": item_id, "q": q}
+app = FastAPI(title="House Price Estimator", version="0.1.0", lifespan=lifespan)
+app.include_router(estimate.router)
+app.include_router(cities.router)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+
+if __name__ == "__main__":
+    import uvicorn
+
+    uvicorn.run(app="main:app", host="localhost", port=8001, reload=True)
