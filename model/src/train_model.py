@@ -20,11 +20,11 @@ def run():
     y_test = test_data["price"]
 
     params_grid = {
-        "max_depth": [10],
-        "learning_rate": [0.01, 0.05],
-        "n_estimators": [5000, 6000],
-        "subsample": [0.5, 0.9],
-        "colsample_bytree": [1.0],
+        "max_depth": [20, 32],
+        "learning_rate": [0.01],
+        "n_estimators": [10_000],
+        "subsample": [0.02, 0.1, 0.3],
+        "colsample_bytree": [0.3],
     }
 
     # Inicjalizacja modelu
@@ -34,14 +34,13 @@ def run():
         learning_rate=0.01,
         max_depth=8,
         random_state=42,
-        n_jobs=-1,
     )
 
     model_grid = GridSearchCV(
         estimator=model,
         param_grid=params_grid,
         scoring="neg_mean_absolute_error",
-        cv=3,
+        cv=10,
         verbose=1,
         n_jobs=-1,
     )
