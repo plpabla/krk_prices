@@ -135,15 +135,6 @@ def extract_data(
             ad_data.get("location", {}).get("coordinates", {}).get("longitude", None)
         )
 
-        available = None
-        extra_info = ad_data.get("additionalInformation", None)
-        if extra_info:
-            for item in extra_info:
-                if item.get("label") == "free_from":
-                    values = item.get("values", [None])
-                    if values:
-                        available = values[0]
-
         return RealEstateListing(
             slug=url.split("/")[-1],
             url=url,
@@ -159,11 +150,9 @@ def extract_data(
             heating=ad_data.get("target", {}).get("Heating", [None])[0],
             floor=ad_data.get("target", {}).get("Floor_no", [None])[0],
             building_floors=ad_data.get("target", {}).get("Building_floors_num", None),
-            rent=ad_data.get("target", {}).get("Rent", None),
             state=ad_data.get("target", {}).get("Construction_status", [None])[0],
             market=ad_data.get("target", {}).get("MarketType", None),
             ownership=ad_data.get("target", {}).get("Building_ownership", [None])[0],
-            available=available,
             ad_type=ad_data.get("advertiserType", "brak informacji"),
         )
 

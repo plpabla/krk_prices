@@ -29,13 +29,11 @@ class RealEstateListing:
     heating: str
     floor: str
     building_floors: Optional[int]  # Total number of floors in the building
-    rent: Optional[float]
     state: str  # Construction status/finishing state
     market: str  # Primary/Secondary market
     ownership: str  # Form of ownership
 
     # Additional information
-    available: str
     ad_type: str  # Type of advertiser
 
     # Metadata
@@ -66,11 +64,9 @@ class RealEstateListing:
             heating=cls.MISSING_INFO,
             floor=cls.MISSING_INFO,
             building_floors=None,
-            rent=None,
             state=cls.MISSING_INFO,
             market=cls.MISSING_INFO,
             ownership=cls.MISSING_INFO,
-            available=cls.MISSING_INFO,
             ad_type=cls.MISSING_INFO,
             extra_info=cls.MISSING_INFO,
         )
