@@ -8,6 +8,7 @@ import { getCities, getDistricts } from "@/api";
 interface LocationProps {
   formValues: FormData;
   handleChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  defaultDistrict: string | null;
 }
 
 function ListItems({
@@ -41,7 +42,11 @@ function ListItems({
   );
 }
 
-export default function Location({ handleChange, formValues }: LocationProps) {
+export default function Location({
+  handleChange,
+  formValues,
+  defaultDistrict = null,
+}: LocationProps) {
   const [cities, setCities] = useState<string[]>([]);
   const [districts, setDistricts] = useState<string[]>([]);
   const [touched, setTouched] = useState<boolean>(false);
@@ -56,7 +61,7 @@ export default function Location({ handleChange, formValues }: LocationProps) {
   useEffect(() => {
     getDistricts(formValues.city).then((cities) => {
       setDistricts(cities);
-      formValues.district = cities[0];
+      formValues.district = defaultDistrict || cities[0];
     });
   }, [formValues.city]);
 

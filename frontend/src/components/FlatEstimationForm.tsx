@@ -40,7 +40,11 @@ const FlatEstimationForm: React.FC = () => {
       >
         {({ values, handleChange, handleSubmit }) => (
           <form onSubmit={handleSubmit}>
-            <Location handleChange={handleChange} formValues={values} />
+            <Location
+              handleChange={handleChange}
+              formValues={values}
+              defaultDistrict={formData.district}
+            />
             <Grid
               container
               spacing={4}
