@@ -68,6 +68,7 @@ def _fill_building_floors_with_common_in_given_district(data):
 def _drop_offers_without_building_floors(data):
     data = data.dropna(subset=["building_floors"])
     data.loc[:, "building_floors"] = data["building_floors"].astype(int)
+    data.reset_index(drop=True, inplace=True)
     return data
 
 
@@ -84,18 +85,25 @@ def _safe_convert_to_int(value):
 def _fill_empty_rooms(data):
     # convert to int
     data.loc[:, "rooms"] = data["rooms"].apply(_safe_convert_to_int)
-    data.loc[:, "rooms"] = data.groupby(pd.cut(data["area"], bins=10), observed=True)[
-        "rooms"
-    ].transform("median")
 
-    if data["rooms"].isna().sum() > 0:
-        # Obliczamy średnią powierzchnię pokoju
-        avg_room_size = data["area"].sum() / data["rooms"].sum()
+    # Create a map of median number of rooms per given area, using 10 bins
+    area_bins = pd.cut(data["area"], bins=10)
+    rooms_per_area_bin = data.groupby(area_bins, observed=True)["rooms"].median()
+    # This creates a mapping we can use to fill missing values based on property area
+    area_to_rooms_map = {
+        bin_name: rooms for bin_name, rooms in rooms_per_area_bin.items()
+    }
 
-        # Zastępujemy brakujące wartości na podstawie średniej powierzchni pokoju
-        data.loc[:, "rooms"] = data["rooms"].fillna(
-            (data["area"] / avg_room_size).round()
-        )
+    # Fill missing values in 'rooms' based on the mapping
+    data.loc[:, "rooms"] = data.apply(
+        lambda row: (
+            area_to_rooms_map[area_bins[row.name]]
+            if pd.isna(row["rooms"])
+            else row["rooms"]
+        ),
+        axis=1,
+    )
+
     data.loc[:, "rooms"] = data["rooms"].apply(_safe_convert_to_int)
     return data
 
@@ -174,6 +182,7 @@ def _columns_one_hot_encoding(data, columns):
 def preprocess_data(data: pd.DataFrame, is_train=True):
     data = _drop_offers_without_price(data)
     data = _drop_tbs(data)
+
     # TODO: move is_train logic into one place
     # TODO: for train set, store IQR, for test set use it
     if is_train:
@@ -181,6 +190,9 @@ def preprocess_data(data: pd.DataFrame, is_train=True):
         data = _drop_price_outlier_rows(data, q1_q3)
     else:
         data = _drop_price_outlier_rows(data, (0, 1000000))
+
+    # Update index after cleanup
+    data.reset_index(drop=True, inplace=True)
 
     data = _clear_wrong_build_year(data)
     data["floor"] = data["floor"].apply(_process_floor)
