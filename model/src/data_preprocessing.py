@@ -68,20 +68,6 @@ def _fill_building_floors_with_common_in_given_district(data):
     return data
 
 
-# TODO: Refactor this to have a function for dropping given column
-def _drop_offers_without_building_floors(data):
-    data = data.dropna(subset=["building_floors"])
-    data.loc[:, "building_floors"] = data["building_floors"].astype(int)
-    data.reset_index(drop=True, inplace=True)
-    return data
-
-
-def _drop_offers_without_build_year(data):
-    data = data.dropna(subset=["build_year"])
-    data.loc[:, "build_year"] = data["build_year"].apply(_safe_convert_to_int)
-    return data
-
-
 def _safe_convert_to_int(value):
     return int(value) if str(value).isdigit() else np.nan
 
@@ -181,8 +167,9 @@ def preprocess_data(data: pd.DataFrame, is_train=True):
     if is_train:
         data = _fill_building_floors_with_common_in_given_district(data)
     else:
-        # TODO: or utilize data from train set
-        data = _drop_offers_without_building_floors(data)
+        # TODO: or utilize data from train set instead of dropping
+        data = _drop_row_if_na(data, "building_floors")
+        data.loc[:, "building_floors"] = data["building_floors"].astype(int)
 
     # Przetwarzanie liczby pokoi
     if is_train:
