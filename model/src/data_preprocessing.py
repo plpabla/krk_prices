@@ -98,13 +98,44 @@ def _fill_empty_rooms(data):
     return data
 
 
-def _fill_build_year_with_district_median(data):
-    data.loc[:, "build_year"] = data["build_year"].fillna(
-        data.groupby("location_district")["build_year"].transform("median")
+def _get_build_year_district_median(data):
+    # Get the median build year for each district
+    build_year_district_median = (
+        data.groupby("location_district")["build_year"]
+        .median()
+        .fillna(-1)  # Fill NaN values temporarily
+        .astype(int)
+        .reset_index()
     )
-    data.loc[:, "build_year"] = data[
-        "build_year"
-    ].round()  # Zaokrąglanie do pełnej liczby
+    # Replace -1 back with None
+    build_year_district_median.loc[
+        build_year_district_median["build_year"] == -1, "build_year"
+    ] = None
+    # Rename the columns for clarity
+    build_year_district_median.columns = ["location_district", "build_year_median"]
+    return build_year_district_median
+
+
+def _fill_build_year_with_district_median(data, district_median):
+    # fill NaN values in 'build_year' with the median build year for the district
+    data = data.merge(
+        district_median,
+        on="location_district",
+        how="left",
+    )
+    data.loc[:, "build_year"] = data.apply(
+        lambda row: (
+            row["build_year_median"]
+            if pd.isna(row["build_year"])
+            else row["build_year"]
+        ),
+        axis=1,
+    )
+    data.drop(columns=["build_year_median"], inplace=True)
+    data = _drop_row_if_na(data, "build_year")
+    # Convert 'build_year' to integer
+    data.loc[:, "build_year"] = data["build_year"].astype(int)
+
     return data
 
 
@@ -141,25 +172,43 @@ def _columns_one_hot_encoding(data, columns):
 
 
 def preprocess_data(data: pd.DataFrame, is_train=True):
-    # TODO: move is_train logic into one place
+    if is_train:
+        config = {}
+    else:
+        # TODO: load config from file
+        config = {
+            "q1_q3": (0, 1000000),
+            "district_median": pd.DataFrame(
+                columns=["location_district", "build_year_median"],
+                data={
+                    "Bieżanów-Prokocim": 2023,
+                    "Bronowice": None,
+                    "Dębniki": 2024,
+                    "Grzegórzki": 2025,
+                    "Krowodrza": 2018,
+                    "Podgórze": 2024,
+                    "Prądnik Biały": 2026,
+                    "Prądnik Czerwony": 1970,
+                    "Stare Miasto": None,
+                    "Zwierzyniec": 2025,
+                },
+            ),
+        }
 
     data = _drop_row_if_na(data, "price")
     data = _drop_row_if_condition(
         data,
         lambda row: "tbs" in row["name"].lower(),
     )
-
-    # TODO: for train set, store IQR, for test set use it
-    if is_train:
-        q1_q3 = _calculate_iqr(data)
-        data = _drop_price_outlier_rows(data, q1_q3)
-    else:
-        data = _drop_price_outlier_rows(data, (0, 1000000))
     # TODO: Check what if we remove all offers > 2M
 
-    # TODO: or utilize data from train set to fill up instead of dropping
     if is_train:
-        data = _fill_build_year_with_district_median(data)
+        config["q1_q3"] = _calculate_iqr(data)
+        config["district_median"] = _get_build_year_district_median(data)
+
+    data = _drop_price_outlier_rows(data, config["q1_q3"])
+
+    data = _fill_build_year_with_district_median(data, config["district_median"])
     data = _clear_wrong_build_year(data)
 
     data["floor"] = data["floor"].apply(_process_floor)
