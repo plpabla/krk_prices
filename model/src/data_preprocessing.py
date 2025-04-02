@@ -7,15 +7,17 @@ from sklearn.preprocessing import MultiLabelBinarizer
 from datetime import date, timedelta
 import warnings
 
-# TODO: for test set we cannot make the same preprocessing steps as for train set
+
+def _drop_row_if_na(data, col_name):
+    data = data.dropna(subset=[col_name])
+    data.reset_index(drop=True, inplace=True)
+    return data
 
 
-def _drop_offers_without_price(data):
-    return data.dropna(subset=["price"])
-
-
-def _drop_tbs(data):
-    return data[~data["name"].str.contains("tbs", case=False, na=False)]
+def _drop_row_if_condition(data, condition):
+    data = data[~data.apply(condition, axis=1)]
+    data.reset_index(drop=True, inplace=True)
+    return data
 
 
 def _calculate_iqr(data):
@@ -28,16 +30,22 @@ def _drop_price_outlier_rows(data, Q1_Q3: tuple[float, float]):
     Q1, Q3 = Q1_Q3
     IQR = Q3 - Q1
 
-    # Odrzucenie wartości poza zakresem IQR
-    data = data[(data["price"] >= Q1 - 1.5 * IQR) & (data["price"] <= Q3 + 1.5 * IQR)]
-    return data
+    return _drop_row_if_condition(
+        data,
+        lambda row: (row["price"] < (Q1 - 1.5 * IQR))
+        or (row["price"] > (Q3 + 1.5 * IQR)),
+    )
 
 
 def _clear_wrong_build_year(data):
-    return data.loc[(data["build_year"] >= 1000) & (data["build_year"] <= 2030)]
+    data = _drop_row_if_na(data, "build_year")
+    return _drop_row_if_condition(
+        data,
+        lambda row: (row["build_year"] < 1000) or (row["build_year"] > 2030),
+    )
 
 
-def _process_floor(value):
+def _process_floor(value, default_floor=0):
     if pd.isna(value) or value.strip() == "":
         return np.nan
     if value == "cellar":
@@ -45,11 +53,7 @@ def _process_floor(value):
     if value == "ground_floor":
         return 0
     match = re.search(r"\d+", value)
-    return int(match.group()) if match else np.nan
-
-
-def _fill_empty_floor(data):
-    data.loc[:, "floor"] = data["floor"].fillna(data["floor"].mode()[0])
+    return int(match.group()) if match else default_floor
 
 
 def _fill_building_floors_with_common_in_given_district(data):
@@ -108,14 +112,6 @@ def _fill_empty_rooms(data):
     return data
 
 
-def _drop_empty_rooms(data):
-    # Drop rows with empty rooms
-    data = data.dropna(subset=["rooms"])
-    # Convert rooms to int
-    data.loc[:, "rooms"] = data["rooms"].apply(_safe_convert_to_int)
-    return data
-
-
 def _fill_build_year_with_district_median(data):
     data.loc[:, "build_year"] = data["build_year"].fillna(
         data.groupby("location_district")["build_year"].transform("median")
@@ -132,27 +128,6 @@ def _add_price_m2_column(data):
     # TODO: Maybe we should use median from district?
     avg_price_m2 = data["price_m2"].mean()
     data["price_m2"] = data["price_m2"].fillna(avg_price_m2)
-    return data
-
-
-def _transform_available_date(data):
-    # Upewnij się, że kolumna 'available' jest w formacie datetime.date
-    data["available"] = pd.to_datetime(data["available"], errors="coerce").dt.date
-
-    # Uzupełnienie brakujących wartości w 'available' pierwszym dniem bieżącego roku
-    data.loc[:, "available"] = data["available"].fillna(date(date.today().year, 1, 1))
-
-    # Zamiana dat wcześniejszych niż dzisiejszy dzień na dzisiejszą datę
-    # oraz dat późniejszych niż 2 lata od dzisiaj na dzisiejszą datę
-    data["available"] = data["available"].apply(
-        lambda x: min(max(x, date.today()), date.today() + timedelta(days=730))
-    )
-
-    # Konwersja 'available' na liczbę dni od 1 stycznia bieżącego roku
-    data["available"] = (
-        pd.to_datetime(data["available"], errors="coerce")
-        - pd.to_datetime(date(date.today().year, 1, 1))
-    ).dt.days
     return data
 
 
@@ -180,26 +155,26 @@ def _columns_one_hot_encoding(data, columns):
 
 
 def preprocess_data(data: pd.DataFrame, is_train=True):
-    data = _drop_offers_without_price(data)
-    data = _drop_tbs(data)
-
     # TODO: move is_train logic into one place
+
+    data = _drop_row_if_na(data, "price")
+    data = _drop_row_if_condition(
+        data,
+        lambda row: "tbs" in row["name"].lower(),
+    )
+
     # TODO: for train set, store IQR, for test set use it
     if is_train:
         q1_q3 = _calculate_iqr(data)
         data = _drop_price_outlier_rows(data, q1_q3)
     else:
         data = _drop_price_outlier_rows(data, (0, 1000000))
+    # TODO: Check what if we remove all offers > 2M
 
-    # TODO: or utilize data from train set
+    # TODO: or utilize data from train set to fill up instead of dropping
     if is_train:
-        data = _clear_wrong_build_year(data)
         data = _fill_build_year_with_district_median(data)
-    else:
-        data = _clear_wrong_build_year(data)
-
-    # Update index after cleanup
-    data.reset_index(drop=True, inplace=True)
+    data = _clear_wrong_build_year(data)
 
     data["floor"] = data["floor"].apply(_process_floor)
     # data = _fill_empty_floor(data)
@@ -210,11 +185,12 @@ def preprocess_data(data: pd.DataFrame, is_train=True):
         data = _drop_offers_without_building_floors(data)
 
     # Przetwarzanie liczby pokoi
-    # FIXME: now I'm getting only empty values here... (so I overwrite them with 99999)
     if is_train:
         data = _fill_empty_rooms(data)
     else:
-        data = _drop_empty_rooms(data)
+        # TODO: utilize data from training set to fill up instead of dropping
+        data = _drop_row_if_na(data, "rooms")
+        data.loc[:, "rooms"] = data["rooms"].apply(_safe_convert_to_int)
 
     # TODO: is it used anywhere?
     data = _add_price_m2_column(data)
@@ -235,7 +211,6 @@ def preprocess_data(data: pd.DataFrame, is_train=True):
         "meble",
         "ogródek",
     ]
-    data.reset_index(drop=True, inplace=True)
     data = _utilities_one_hot_encoding(data, utilities)
 
     categorical_features = [
