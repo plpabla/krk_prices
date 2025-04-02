@@ -47,7 +47,7 @@ def _clear_wrong_build_year(data):
 
 def _process_floor(value, default_floor=0):
     if pd.isna(value) or value.strip() == "":
-        return np.nan
+        return default_floor
     if value == "cellar":
         return -1
     if value == "ground_floor":
@@ -94,7 +94,6 @@ def _fill_empty_rooms(data):
         axis=1,
     )
 
-    data.loc[:, "rooms"] = data["rooms"].apply(_safe_convert_to_int)
     return data
 
 
@@ -176,23 +175,37 @@ def preprocess_data(data: pd.DataFrame, is_train=True):
         config = {}
     else:
         # TODO: load config from file
+        district_median = pd.DataFrame(
+            {
+                "location_district": [
+                    "Bieżanów-Prokocim",
+                    "Bronowice",
+                    "Dębniki",
+                    "Grzegórzki",
+                    "Krowodrza",
+                    "Podgórze",
+                    "Prądnik Biały",
+                    "Prądnik Czerwony",
+                    "Stare Miasto",
+                    "Zwierzyniec",
+                ],
+                "build_year_median": [
+                    2000,
+                    2001,
+                    2002,
+                    2002,
+                    2002,
+                    None,
+                    2002,
+                    2002,
+                    2002,
+                    1999,
+                ],
+            }
+        )
         config = {
             "q1_q3": (0, 1000000),
-            "district_median": pd.DataFrame(
-                columns=["location_district", "build_year_median"],
-                data={
-                    "Bieżanów-Prokocim": 2023,
-                    "Bronowice": None,
-                    "Dębniki": 2024,
-                    "Grzegórzki": 2025,
-                    "Krowodrza": 2018,
-                    "Podgórze": 2024,
-                    "Prądnik Biały": 2026,
-                    "Prądnik Czerwony": 1970,
-                    "Stare Miasto": None,
-                    "Zwierzyniec": 2025,
-                },
-            ),
+            "district_median": district_median,
         }
 
     data = _drop_row_if_na(data, "price")
@@ -207,7 +220,6 @@ def preprocess_data(data: pd.DataFrame, is_train=True):
         config["district_median"] = _get_build_year_district_median(data)
 
     data = _drop_price_outlier_rows(data, config["q1_q3"])
-
     data = _fill_build_year_with_district_median(data, config["district_median"])
     data = _clear_wrong_build_year(data)
 
@@ -223,6 +235,7 @@ def preprocess_data(data: pd.DataFrame, is_train=True):
     # Przetwarzanie liczby pokoi
     if is_train:
         data = _fill_empty_rooms(data)
+        pass
     else:
         # TODO: utilize data from training set to fill up instead of dropping
         data = _drop_row_if_na(data, "rooms")
