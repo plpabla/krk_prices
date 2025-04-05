@@ -56,15 +56,58 @@ def _process_floor(value, default_floor=0):
     return int(match.group()) if match else default_floor
 
 
-def _fill_building_floors_with_common_in_given_district(data):
-    data.loc[:, "building_floors"] = data.groupby("location_district")[
-        "building_floors"
-    ].transform(
-        lambda x: x.fillna(
-            x.mode()[0] if not x.mode().empty else data["building_floors"].mode()[0]
-        )
+def _get_building_floors_per_district(data):
+    # Get the median number of floors for each district
+    building_floors_district_median = (
+        data.groupby("location_district")["building_floors"]
+        .median()
+        .fillna(-1)  # Fill NaN values temporarily
+        .astype(int)
+        .reset_index()
     )
-    # data.loc[:, "building_floors"] = data["building_floors"].astype(int)
+    # Replace -1 back with None
+    building_floors_district_median.loc[
+        building_floors_district_median["building_floors"] == -1,
+        "building_floors",
+    ] = None
+    # Rename the columns for clarity
+    building_floors_district_median.columns = [
+        "location_district",
+        "building_floors_median",
+    ]
+    return building_floors_district_median
+
+
+def _fill_building_floors_with_common_in_given_district(data, district_median):
+    # fill NaN values in 'building_floors' with the median building floors for the district
+    data = data.merge(
+        district_median,
+        on="location_district",
+        how="left",
+    )
+    data.loc[:, "building_floors"] = data.apply(
+        lambda row: (
+            row["building_floors_median"]
+            if pd.isna(row["building_floors"])
+            else row["building_floors"]
+        ),
+        axis=1,
+    )
+    data.drop(
+        columns=[c for c in district_median.columns if c != "location_district"],
+        inplace=True,
+    )
+
+    data = _drop_row_if_na(data, "building_floors")
+    # Convert 'building_floors' to integer
+    data.loc[:, "building_floors"] = data["building_floors"].astype(int)
+    # Check if the building_floors is greater than or equal to the floor
+    data = _drop_row_if_condition(
+        data,
+        lambda row: (
+            row["building_floors"] < row["floor"] if pd.notna(row["floor"]) else False
+        ),
+    )
     return data
 
 
@@ -72,22 +115,29 @@ def _safe_convert_to_int(value):
     return int(value) if str(value).isdigit() else np.nan
 
 
-def _fill_empty_rooms(data):
-    # convert to int
-    data.loc[:, "rooms"] = data["rooms"].apply(_safe_convert_to_int)
-
-    # Create a map of median number of rooms per given area, using 10 bins
+def _calculate_rooms_per_area(data):
+    # FIXME: it doesn't work
     area_bins = pd.cut(data["area"], bins=10)
     rooms_per_area_bin = data.groupby(area_bins, observed=True)["rooms"].median()
     # This creates a mapping we can use to fill missing values based on property area
     area_to_rooms_map = {
         bin_name: rooms for bin_name, rooms in rooms_per_area_bin.items()
     }
+    # Expected return: array with (max_area, rooms) tuples
+    for bin_name, rooms in area_to_rooms_map.items():
+        area_to_rooms_map[bin_name] = _safe_convert_to_int(rooms)
+    # Convert the area_bins to a list of tuples
+    area_bins = [
+        (bin.left, bin.right) for bin in area_bins.categories
+    ]  # Convert to list of tuples
 
+
+def _fill_empty_rooms(data, area_bins, area_to_rooms_map):
+    # FIXME: it doesn't work
     # Fill missing values in 'rooms' based on the mapping
     data.loc[:, "rooms"] = data.apply(
         lambda row: (
-            area_to_rooms_map[area_bins[row.name]]
+            area_to_rooms_map.get(area_bins[row.name], data["rooms"].median())
             if pd.isna(row["rooms"])
             else row["rooms"]
         ),
@@ -130,12 +180,32 @@ def _fill_build_year_with_district_median(data, district_median):
         ),
         axis=1,
     )
-    data.drop(columns=["build_year_median"], inplace=True)
+    data.drop(
+        columns=[c for c in district_median.columns if c != "location_district"],
+        inplace=True,
+    )
     data = _drop_row_if_na(data, "build_year")
     # Convert 'build_year' to integer
     data.loc[:, "build_year"] = data["build_year"].astype(int)
 
     return data
+
+
+def _calculate_median_values(data):
+    # Get the median build year for each district
+    build_year_district_median = _get_build_year_district_median(data)
+    # Get the median number of floors for each district
+    building_floors_district_median = _get_building_floors_per_district(data)
+
+    # Merge the two DataFrames on 'location_district'
+    district_median = pd.merge(
+        build_year_district_median,
+        building_floors_district_median,
+        on="location_district",
+        how="outer",
+    )
+
+    return district_median
 
 
 def _add_price_m2_column(data):
@@ -193,7 +263,7 @@ def preprocess_data(data: pd.DataFrame, is_train=True):
                     2000,
                     2001,
                     2002,
-                    2002,
+                    1999,
                     2002,
                     None,
                     2002,
@@ -201,11 +271,25 @@ def preprocess_data(data: pd.DataFrame, is_train=True):
                     2002,
                     1999,
                 ],
+                "building_floors_median": [
+                    3,
+                    3,
+                    4,
+                    99,
+                    4,
+                    12,
+                    4,
+                    4,
+                    4,
+                    3,
+                ],
             }
         )
         config = {
             "q1_q3": (0, 1000000),
             "district_median": district_median,
+            "area_to_rooms_map": None,
+            "area_bins": None,
         }
 
     data = _drop_row_if_na(data, "price")
@@ -213,33 +297,27 @@ def preprocess_data(data: pd.DataFrame, is_train=True):
         data,
         lambda row: "tbs" in row["name"].lower(),
     )
-    # TODO: Check what if we remove all offers > 2M
 
     if is_train:
         config["q1_q3"] = _calculate_iqr(data)
-        config["district_median"] = _get_build_year_district_median(data)
+        config["district_median"] = _calculate_median_values(data)
+        # Doesn't work
+        # config["area_to_rooms_map"], config["area_bins"] = _calculate_rooms_per_area(
+        #     data
+        # )
 
     data = _drop_price_outlier_rows(data, config["q1_q3"])
     data = _fill_build_year_with_district_median(data, config["district_median"])
     data = _clear_wrong_build_year(data)
 
     data["floor"] = data["floor"].apply(_process_floor)
-    # data = _fill_empty_floor(data)
-    if is_train:
-        data = _fill_building_floors_with_common_in_given_district(data)
-    else:
-        # TODO: or utilize data from train set instead of dropping
-        data = _drop_row_if_na(data, "building_floors")
-        data.loc[:, "building_floors"] = data["building_floors"].astype(int)
+    data = _fill_building_floors_with_common_in_given_district(
+        data, config["district_median"]
+    )
 
-    # Przetwarzanie liczby pokoi
-    if is_train:
-        data = _fill_empty_rooms(data)
-        pass
-    else:
-        # TODO: utilize data from training set to fill up instead of dropping
-        data = _drop_row_if_na(data, "rooms")
-        data.loc[:, "rooms"] = data["rooms"].apply(_safe_convert_to_int)
+    # Przetwarzanie liczby pokoi - nie dziala
+    # data = _fill_empty_rooms(data, config["area_bins"], config["area_to_rooms_map"])
+    data = _drop_row_if_na(data, "rooms")
 
     # TODO: is it used anywhere?
     data = _add_price_m2_column(data)
