@@ -4,18 +4,19 @@ import pandas as pd
 from add_district import add_district
 from create_train_test import create_train_test
 from data_preprocessing import preprocess_data
+from util import get_filename_and_extension
 
 
 if __name__ == "__main__":
     if len(sys.argv) > 1:
-        filename = sys.argv[1]
+        source_filename = sys.argv[1]
     else:
         print("Please provide a filename as argument")
         print("Usage: python create_train_test.py <filename>")
         # sys.exit(1)
-        filename = "model/data/testowy.csv"
+        source_filename = "model/data/testowy.csv"
 
-    filename = add_district(filename)
+    filename = add_district(source_filename)
     print("✅ Plik z dzielnicami utworzony")
 
     train_filename, test_filename = create_train_test(filename)
@@ -25,8 +26,10 @@ if __name__ == "__main__":
     test = pd.read_csv(test_filename)
 
     # Przetworzenie i zapis zestawów train/test
-    train = preprocess_data(train, is_train=True)
-    test = preprocess_data(test, is_train=False)
+    name, _ = get_filename_and_extension(source_filename)
+    config_filename = f"{name}.pkl"
+    train = preprocess_data(train, is_train=True, config_filename=config_filename)
+    test = preprocess_data(test, is_train=False, config_filename=config_filename)
 
     # Porównanie kolumn i dodanie brakujących kolumn z zerami
     for col in train.columns:

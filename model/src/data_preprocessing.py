@@ -4,7 +4,7 @@ import re
 import ast
 import sys
 from sklearn.preprocessing import MultiLabelBinarizer
-from datetime import date, timedelta
+import pickle
 import warnings
 
 
@@ -240,57 +240,14 @@ def _columns_one_hot_encoding(data, columns):
     return data
 
 
-def preprocess_data(data: pd.DataFrame, is_train=True):
+def preprocess_data(
+    data: pd.DataFrame, is_train: bool, config_filename: str
+) -> pd.DataFrame:
     if is_train:
         config = {}
     else:
-        # TODO: load config from file
-        district_median = pd.DataFrame(
-            {
-                "location_district": [
-                    "Bieżanów-Prokocim",
-                    "Bronowice",
-                    "Dębniki",
-                    "Grzegórzki",
-                    "Krowodrza",
-                    "Podgórze",
-                    "Prądnik Biały",
-                    "Prądnik Czerwony",
-                    "Stare Miasto",
-                    "Zwierzyniec",
-                ],
-                "build_year_median": [
-                    2000,
-                    2001,
-                    2002,
-                    1999,
-                    2002,
-                    None,
-                    2002,
-                    2002,
-                    2002,
-                    1999,
-                ],
-                "building_floors_median": [
-                    3,
-                    3,
-                    4,
-                    99,
-                    4,
-                    12,
-                    4,
-                    4,
-                    4,
-                    3,
-                ],
-            }
-        )
-        config = {
-            "q1_q3": (0, 1000000),
-            "district_median": district_median,
-            "area_to_rooms_map": None,
-            "area_bins": None,
-        }
+        with open(config_filename, "rb") as f:
+            config = pickle.load(f)
 
     data = _drop_row_if_na(data, "price")
     data = _drop_row_if_condition(
@@ -305,6 +262,8 @@ def preprocess_data(data: pd.DataFrame, is_train=True):
         # config["area_to_rooms_map"], config["area_bins"] = _calculate_rooms_per_area(
         #     data
         # )
+        with open(config_filename, "wb") as f:
+            pickle.dump(config, f)
 
     data = _drop_price_outlier_rows(data, config["q1_q3"])
     data = _fill_build_year_with_district_median(data, config["district_median"])
@@ -317,9 +276,10 @@ def preprocess_data(data: pd.DataFrame, is_train=True):
 
     # Przetwarzanie liczby pokoi - nie dziala
     # data = _fill_empty_rooms(data, config["area_bins"], config["area_to_rooms_map"])
+    data["rooms"] = data["rooms"].apply(_safe_convert_to_int)
     data = _drop_row_if_na(data, "rooms")
 
-    # TODO: is it used anywhere?
+    # TODO: Use it to drop price per m2 outliers only
     data = _add_price_m2_column(data)
 
     # One-Hot Encoding

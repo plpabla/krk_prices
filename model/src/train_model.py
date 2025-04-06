@@ -20,10 +20,10 @@ def run():
     y_test = test_data["price"]
 
     params_grid = {
-        "max_depth": [20, 32],
+        "max_depth": [32],
         "learning_rate": [0.01],
-        "n_estimators": [10_000],
-        "subsample": [0.02, 0.1, 0.3],
+        "n_estimators": [8_000],
+        "subsample": [0.1],
         "colsample_bytree": [0.3],
     }
 
