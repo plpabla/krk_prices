@@ -20,11 +20,11 @@ def run():
     y_test = test_data["price"]
 
     params_grid = {
-        "max_depth": [32],
-        "learning_rate": [0.01],
-        "n_estimators": [8_000],
-        "subsample": [0.1],
-        "colsample_bytree": [0.3],
+        "max_depth": [12],
+        "learning_rate": [0.005],
+        "n_estimators": [20_000],
+        "subsample": [0.3],
+        "colsample_bytree": [0.8],
     }
 
     # Inicjalizacja modelu
