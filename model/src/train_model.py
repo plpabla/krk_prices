@@ -19,11 +19,12 @@ def run():
     X_test = test_data.drop(columns=["price", "price_m2"])
     y_test = test_data["price"]
 
+    # RMSE <95kPLN
     params_grid = {
-        "max_depth": [12],
+        "max_depth": [10],
         "learning_rate": [0.005],
         "n_estimators": [20_000],
-        "subsample": [0.3],
+        "subsample": [0.30],
         "colsample_bytree": [0.8],
     }
 
