@@ -14,7 +14,7 @@ if __name__ == "__main__":
         print("Please provide a filename as argument")
         print("Usage: python create_train_test.py <filename>")
         # sys.exit(1)
-        source_filename = "model/data/testowy.csv"
+        source_filename = "../../model/data/otodom.csv"
 
     filename = add_district(source_filename)
     print("✅ Plik z dzielnicami utworzony")

@@ -39,11 +39,11 @@ def run():
     X_train, X_test = convert_str_to_category(X_train, X_test)
 
     params_grid = {
-        "max_depth": [8, 12],
+        "max_depth": [10],
         "learning_rate": [0.005],
-        "n_estimators": [10_000, 20_000],
-        "subsample": [0.3],
-        "colsample_bytree": [0.8, 1.0],
+        "n_estimators": [20_000],
+        "subsample": [0.30],
+        "colsample_bytree": [0.8],
     }
 
     # Inicjalizacja modelu

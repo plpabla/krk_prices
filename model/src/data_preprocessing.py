@@ -37,6 +37,23 @@ def _drop_price_outlier_rows(data, Q1_Q3: tuple[float, float]):
     )
 
 
+def _calculate_iqr_price_m2(data):
+    Q1 = data["price_m2"].quantile(0.25)
+    Q3 = data["price_m2"].quantile(0.75)
+    return (Q1, Q3)
+
+
+def _drop_price_m2_outlier_rows(data, Q1_Q3: tuple[float, float]):
+    Q1, Q3 = Q1_Q3
+    IQR = Q3 - Q1
+
+    return _drop_row_if_condition(
+        data,
+        lambda row: (row["price_m2"] < (Q1 - 1.5 * IQR))
+        or (row["price_m2"] > (Q3 + 1.5 * IQR)),
+    )
+
+
 def _clear_wrong_build_year(data):
     data = _drop_row_if_na(data, "build_year")
     return _drop_row_if_condition(
@@ -254,9 +271,10 @@ def preprocess_data(
         data,
         lambda row: "tbs" in row["name"].lower(),
     )
-
+    data = _add_price_m2_column(data)
     if is_train:
         config["q1_q3"] = _calculate_iqr(data)
+        config["q1_q3_m2"] = _calculate_iqr_price_m2(data)
         config["district_median"] = _calculate_median_values(data)
         # Doesn't work
         # config["area_to_rooms_map"], config["area_bins"] = _calculate_rooms_per_area(
@@ -266,6 +284,7 @@ def preprocess_data(
             pickle.dump(config, f)
 
     data = _drop_price_outlier_rows(data, config["q1_q3"])
+    data = _drop_price_m2_outlier_rows(data, config["q1_q3_m2"])
     data = _fill_build_year_with_district_median(data, config["district_median"])
     data = _clear_wrong_build_year(data)
 
@@ -280,7 +299,9 @@ def preprocess_data(
     data = _drop_row_if_na(data, "rooms")
 
     # TODO: Use it to drop price per m2 outliers only
-    data = _add_price_m2_column(data)
+    ##data = _add_price_m2_column(data)
+
+
 
     # One-Hot Encoding
     utilities = [
