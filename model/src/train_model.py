@@ -41,7 +41,7 @@ def run():
     params_grid = {
         "max_depth": [10],
         "learning_rate": [0.005],
-        "n_estimators": [20_000],
+        "n_estimators": [10_000],
         "subsample": [0.30],
         "colsample_bytree": [0.8],
     }
