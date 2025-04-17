@@ -9,15 +9,18 @@ __all__ = ["model"]
 
 class Model:
     _model: XGBRegressor | None = None
+    _cat_features_mapping: dict[str, dict[int, str]] = {}
 
-    def __init__(self, model_path=None):
-        self._load_model(model_path)
+    def __init__(self, model_path=None, cat_file_path=None):
+        self._load_model(model_path, cat_file_path)
 
-    def _load_model(self, model_path):
+    def _load_model(self, model_path, cat_file_path):
         """Load model from file."""
         with open(model_path, "rb") as file:
             # Load the model using pickle
             self._model = pickle.load(file)
+        with open(cat_file_path, "rb") as file:
+            self._cat_features_mapping = pickle.load(file)
         print(">>> Model loaded successfully.")
 
     def predict(self, data: EstimateInput):
@@ -27,100 +30,81 @@ class Model:
         return self._model.predict(data)
 
     def get_districts(self) -> list[str]:
-        features = self._model.get_booster().feature_names
-        return [
-            feature.split("_")[-1]
-            for feature in features
-            if feature.startswith("location_district")
-        ]
+        return [v for v in self._cat_features_mapping["location_district"].values()]
 
     def convert_to_xgboost_input(self, data: EstimateInput) -> np.array:
-        validate_schema(self._model)
-        data_array = np.zeros([38])
-        data_array[0] = int(data.ad_type == AdType.AGENCY)
-        data_array[1] = int(data.ad_type == AdType.PRIVATE)
-        data_array[2] = data.area
-        data_array[3] = 2000  # TODO: missing in frontend
-        data_array[4] = data.floorsInBuilding
-        data_array[5] = data.floor
-        data_array[6] = int(data.district == "Bieńczyce")
-        data_array[7] = int(data.district == "Bieżanów-Prokocim")
-        data_array[8] = int(data.district == "Bronowice")
-        data_array[9] = int(data.district == "Czyżyny")
-        data_array[10] = int(data.district == "Dębniki")
-        data_array[11] = int(data.district == "Grzegórzki")
-        data_array[12] = int(data.district == "Krowodrza")
-        data_array[13] = int(data.district == "Mistrzejowice")
-        data_array[14] = int(data.district == "Mogilany")
-        data_array[15] = int(data.district == "Nowa Huta")
-        data_array[16] = int(data.district == "Podgórze")
-        data_array[17] = int(data.district == "Podgórze Duchackie")
-        data_array[18] = int(data.district == "Prądnik Biały")
-        data_array[19] = int(data.district == "Prądnik Czerwony")
-        data_array[20] = int(data.district == "Skawina")
-        data_array[21] = int(data.district == "Stare Miasto")
-        data_array[22] = int(data.district == "Swoszowice")
-        data_array[23] = int(data.district == "Wieliczka")
-        data_array[24] = int(data.district == "Wielka Wieś")
-        data_array[25] = int(data.district == "Wzgórza Krzesławickie")
-        data_array[26] = int(data.district == "Zielonki")
-        data_array[27] = int(data.district == "Zwierzyniec")
-        data_array[28] = int(data.district == "Łagiewniki-Borek Fałęcki")
-        data_array[29] = 50.0647  # TODO: missing calculation from address
-        data_array[30] = 19.9450  # TODO: missing calculation from address
-        data_array[31] = data.rooms
-        data_array[32] = int(data.balcony)
-        data_array[33] = int(data.separate_kitchen)
-        data_array[34] = int(data.basement)
-        data_array[35] = int(data.basement)
-        data_array[36] = int(data.balcony)
-        data_array[37] = int(data.elevator)
+        features = validate_schema(self._model)
+        n_features = len(features)
+        data_array = np.zeros([n_features])
+
+        form_data = {}
+        # Categorical features
+        form_data["ad_type"] = self._map("ad_type", data.ad_type)
+        form_data["heating"] = self._map("heating", data.heating)
+        form_data["location_district"] = self._map("location_district", data.district)
+        form_data["market"] = self._map("market", data.market)
+        form_data["ownership"] = self._map("ownership", data.ownership)
+        form_data["state"] = self._map("state", data.state)
+
+        # Numerical features - todo
+        form_data["area"] = data.area
+        form_data["build_year"] = 2000  # TODO: missing in backend
+        form_data["building_floors"] = data.floorsInBuilding
+        form_data["floor"] = data.floor
+        form_data["location_lat"] = 50.0647  # TODO: missing calculation from address
+        form_data["location_lon"] = 19.9450  # TODO: missing calculation from address
+        form_data["rooms"] = data.rooms
+        form_data["utilities_balkon"] = int(data.balcony)
+        form_data["utilities_oddzielna kuchnia"] = int(data.separate_kitchen)
+        form_data["utilities_piwnica"] = int(data.basement)
+        form_data["utilities_pom. użytkowe"] = int(data.basement)
+        form_data["utilities_taras"] = int(data.balcony)
+        form_data["utilities_winda"] = int(data.elevator)
+        # TODO: available in frontend but not used: available from
+
+        # Fill data_array with values from form_data using fetures array
+        for i, feature in enumerate(features):
+            if feature in form_data:
+                data_array[i] = form_data[feature]
+            else:
+                raise ValueError(f"Feature '{feature}' not found in form_data")
 
         # Reshape the 1D array to a 2D array (1 x 38) as required by XGBoost
         data_array = np.reshape(data_array, (1, -1))
         return data_array
 
+    def _map(self, feature: str, value: str) -> int:
+        translated_value = translate(feature, value)
+        if feature in self._cat_features_mapping:
+            mapping = self._cat_features_mapping[feature]
+            for key, val in mapping.items():
+                if val == translated_value:
+                    return key
+        raise ValueError(
+            f"Value '{value}' not found in mapping for feature '{feature}'"
+        )
 
-model = Model("../model/out/xgboost_model.pkl")
+
+model = Model("../model/out/xgboost_model.pkl", "../model/out/category_mappings.pkl")
 
 
-def validate_schema(model: XGBRegressor):
-    """ " Validate schema of the model. Version 1.0.0"""
+def validate_schema(model: XGBRegressor) -> int:
+    """ " Validate schema of the model. Version 2.0.0"""
     features = model.get_booster().feature_names
-    assert len(features) == 38, f"Expected 38 features, got {len(features)}"
     expected_feature_names = [
-        "ad_type_business",
-        "ad_type_private",
+        "ad_type",
         "area",
         "build_year",
         "building_floors",
         "floor",
-        "location_district_Bieńczyce",
-        "location_district_Bieżanów-Prokocim",
-        "location_district_Bronowice",
-        "location_district_Czyżyny",
-        "location_district_Dębniki",
-        "location_district_Grzegórzki",
-        "location_district_Krowodrza",
-        "location_district_Mistrzejowice",
-        "location_district_Mogilany",
-        "location_district_Nowa Huta",
-        "location_district_Podgórze",
-        "location_district_Podgórze Duchackie",
-        "location_district_Prądnik Biały",
-        "location_district_Prądnik Czerwony",
-        "location_district_Skawina",
-        "location_district_Stare Miasto",
-        "location_district_Swoszowice",
-        "location_district_Wieliczka",
-        "location_district_Wielka Wieś",
-        "location_district_Wzgórza Krzesławickie",
-        "location_district_Zielonki",
-        "location_district_Zwierzyniec",
-        "location_district_Łagiewniki-Borek Fałęcki",
+        "heating",
+        "location_district",
         "location_lat",
         "location_lon",
+        "market",
+        "ownership",
         "rooms",
+        "state",
         "utilities_balkon",
         "utilities_oddzielna kuchnia",
         "utilities_piwnica",
@@ -129,6 +113,45 @@ def validate_schema(model: XGBRegressor):
         "utilities_winda",
     ]
 
-    assert (
-        features == expected_feature_names
-    ), "Feature names don't match or are in wrong order"
+    # Check if all expected features are present regardless of order
+    for feature in expected_feature_names:
+        assert feature in features, f"Expected feature '{feature}' is missing"
+
+    assert len(features) == len(
+        expected_feature_names
+    ), f"Expected {len(expected_feature_names)} features, got {len(features)}"
+
+    return features
+
+
+def translate(feature: str, value: str) -> str:
+    """Translate feature value to its original value."""
+    if feature == "location_district":
+        return value
+
+    dictionary = {
+        "ad_type": {"prywatny": "private", "biuro": "business"},
+        "heating": {
+            "miejskie": "boiler_room",
+            "gazowe": "gas",
+            "elektryczne": "electric",
+            "inne": "other",
+        },  # TODO: inne są w modelu
+        "market": {"Pierwotny": "primary", "Wtórny": "secondary"},
+        "ownership": {
+            "Własnościowe": "full_ownership",
+            "Spoldzielcze": "usufruct",
+            "Inne": "share",
+        },  # TODO: inne są w modelu
+        "state": {
+            "Do zamieszkania": "ready_to_use",
+            "Do remontu": "to_renovation",
+            "Do wykończenia": "to_completion",
+        },
+    }
+    res: str | None = dictionary.get(feature, {}).get(value, value)
+    if res is None:
+        raise ValueError(
+            f"Value '{value}' not found in dictionary for feature '{feature}'"
+        )
+    return res

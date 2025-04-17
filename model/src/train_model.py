@@ -10,8 +10,16 @@ def convert_str_to_category(
     train: pd.DataFrame, test: pd.DataFrame
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
     # Przekonwertuj kolumny kategoryczne na Categorical
+    category_mappings = {}
     for col in train.select_dtypes(include=["object"]).columns:
         train[col] = train[col].astype("category")
+        # Store the mapping for this column
+        category_mappings[col] = dict(enumerate(train[col].cat.categories))
+
+    # Zapisz mapowanie do pliku
+    with open("../out/category_mappings.pkl", "wb") as file:
+        pickle.dump(category_mappings, file)
+
     for col in test.select_dtypes(include=["object"]).columns:
         test[col] = test[col].astype("category")
     # Upewnij się, że kolumny kategoryczne mają te same kategorie w zbiorach treningowych i testowych
