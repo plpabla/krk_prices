@@ -1,3 +1,4 @@
+import sys
 import pandas as pd
 import xgboost as xgb
 import pickle
@@ -7,7 +8,7 @@ import numpy as np
 
 
 def convert_str_to_category(
-    train: pd.DataFrame, test: pd.DataFrame
+    train: pd.DataFrame, test: pd.DataFrame, city_name="otodom"
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
     # Przekonwertuj kolumny kategoryczne na Categorical
     category_mappings = {}
@@ -17,7 +18,7 @@ def convert_str_to_category(
         category_mappings[col] = dict(enumerate(train[col].cat.categories))
 
     # Zapisz mapowanie do pliku
-    with open("../out/category_mappings.pkl", "wb") as file:
+    with open(f"../out/category_mappings_{city_name}.pkl", "wb") as file:
         pickle.dump(category_mappings, file)
 
     for col in test.select_dtypes(include=["object"]).columns:
@@ -31,10 +32,10 @@ def convert_str_to_category(
     return train, test
 
 
-def run():
+def run(filename: str = "otodom"):
     # Wczytanie danych
-    train_data = pd.read_csv("../data/otodom_district_train.csv")
-    test_data = pd.read_csv("../data/otodom_district_test.csv")
+    train_data = pd.read_csv(f"../data/{filename}_district_train.csv")
+    test_data = pd.read_csv(f"../data/{filename}_district_test.csv")
 
     # Wybór cech i zmiennej docelowej
     X_train = train_data.drop(
@@ -44,7 +45,7 @@ def run():
     X_test = test_data.drop(columns=["price", "price_m2"])
     y_test = test_data["price"]
 
-    X_train, X_test = convert_str_to_category(X_train, X_test)
+    X_train, X_test = convert_str_to_category(X_train, X_test, city_name=filename)
 
     params_grid = {
         "max_depth": [10],
@@ -92,19 +93,16 @@ def run():
     print(f"  R-squared (R²): {r2}")
 
     # Zapisanie modelu do pliku
-    with open("../out/xgboost_model.pkl", "wb") as file:
+    with open(f"../out/{filename}_model.pkl", "wb") as file:
         pickle.dump(model, file)
 
     print("✅ Model XGBoost wytrenowany i zapisany!")
 
 
 if __name__ == "__main__":
-    run()
-    # TODO: make it a parametrized script
-    # if len(sys.argv) > 1:
-    #     filename = sys.argv[1]
-    #     create_train_test(filename)
-    # else:
-    #     print("Please provide a filename as argument")
-    #     print("Usage: python create_train_test.py <filename>")
-    #     sys.exit(1)
+    
+    if len(sys.argv) > 1:
+        filename = sys.argv[1]
+        run(filename)
+    else:
+        run()
