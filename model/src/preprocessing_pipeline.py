@@ -9,13 +9,14 @@ from util import get_filename_and_extension
 
 if __name__ == "__main__":
     if len(sys.argv) > 1:
-        source_filename = sys.argv[1]
+        city = sys.argv[1]
     else:
         print("Please provide a filename as argument")
         print("Usage: python create_train_test.py <filename>")
         # sys.exit(1)
-        source_filename = "../../model/data/otodom.csv"
+        city = "otodom"
 
+    source_filename = f"../../model/data/{city}.csv"
     filename = add_district(source_filename)
     print("✅ Plik z dzielnicami utworzony")
 

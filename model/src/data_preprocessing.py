@@ -358,23 +358,23 @@ def preprocess_data(
         "ad_type",
         "location_district",
     ]
-    data = _columns_one_hot_encoding(data, categorical_features)
+    # data = _columns_one_hot_encoding(data, categorical_features)
 
     # Usunięcie zbędnych kolumn
     data.drop(
         columns=[
             "utilities",
-            "heating",
-            "state",
-            "market",
-            "ownership",
+            # "heating",
+            # "state",
+            # "market",
+            # "ownership",
             "location",
-            "ad_type",
+            # "ad_type",
             "scrapped_date",
             "slug",
             "url",
             "name",
-            "location_district",
+            # "location_district",
         ],
         inplace=True,
     )
