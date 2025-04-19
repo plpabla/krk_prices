@@ -60,6 +60,7 @@ class Model:
         form_data["utilities_pom. użytkowe"] = int(data.basement)
         form_data["utilities_taras"] = int(data.balcony)
         form_data["utilities_winda"] = int(data.elevator)
+        # form_data["utilities_garage"] = int(data.garage) # TODO: add in model or remove from frontend
         # TODO: available in frontend but not used: available from
 
         # Fill data_array with values from form_data using fetures array
@@ -91,6 +92,7 @@ model = Model("../model/out/xgboost_model.pkl", "../model/out/category_mappings.
 def validate_schema(model: XGBRegressor) -> int:
     """ " Validate schema of the model. Version 2.0.0"""
     features = model.get_booster().feature_names
+    print(">>> Model features:", features)
     expected_feature_names = [
         "ad_type",
         "area",
