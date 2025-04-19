@@ -3,12 +3,9 @@ import { City } from "@/types/backend";
 import { PriceEstimate } from "@/types/backend";
 import { usePriceStore } from "@/state/price";
 
-// TODO: maybe better read it form env variable so I can have different API_URL for production and development
-const API_URL = "http://localhost:8001";
-
 export async function getCities(): Promise<string[]> {
   try {
-    const response = await fetch(`${API_URL}/cities`);
+    const response = await fetch(`/api/cities`);
     const data = await response.json();
     return data.map((item: City) => item.name);
   } catch (error) {
@@ -19,7 +16,7 @@ export async function getCities(): Promise<string[]> {
 
 export async function getDistricts(city: string): Promise<string[]> {
   try {
-    const response = await fetch(`${API_URL}/cities/${city}`);
+    const response = await fetch(`/api/cities/${city}`);
     const data = await response.json();
     return data.map((item: City) => item.name);
   } catch (error) {
@@ -31,7 +28,7 @@ export async function getDistricts(city: string): Promise<string[]> {
 export async function getPriceEstimate(data: FormData): Promise<void> {
   const { setPrice } = usePriceStore.getState();
 
-  const response = await fetch(`${API_URL}/estimate`, {
+  const response = await fetch(`/api/estimate`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
