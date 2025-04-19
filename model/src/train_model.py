@@ -75,29 +75,9 @@ def run(filename: str = "otodom"):
     print("  ✅ Najlepsze parametry: ", model_grid.best_params_)
     print("  ✅ Najlepszy wynik (neg RMSE): ", model_grid.best_score_)
 
-    # Pobranie najlepszego modelu i dalsze trenowanie z early stopping
-    best_model = model_grid.best_estimator_
-    best_model.fit(
-        X_train,
-        y_train,
-        eval_set=[(X_test, y_test)],
-        early_stopping_rounds=50,
-        verbose=False
-    )
-
-    # Predykcja i ocena modelu
-    predictions = best_model.predict(X_test)
-    mse = mean_squared_error(y_test, predictions)
-    rmse = np.sqrt(mse)
-    r2 = r2_score(y_test, predictions)
-
-    print(f"  📊 Mean Squared Error (MSE): {mse:.2f}")
-    print(f"  📊 Root Mean Squared Error (RMSE): {rmse:.2f}")
-    print(f"  📊 R-squared (R²): {r2:.4f}")
-
     # Zapisanie modelu do pliku
     with open(f"../out/{filename}_model.pkl", "wb") as file:
-        pickle.dump(best_model, file)
+        pickle.dump(model_grid.best_estimator_, file)
 
     print("✅ Model XGBoost został wytrenowany i zapisany do pliku!")
 

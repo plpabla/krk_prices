@@ -9,7 +9,7 @@ from scipy.stats import gaussian_kde
 POINTS = 200
 
 # Load the data
-data = pd.read_csv("../../data/otodom.csv")
+data = pd.read_csv("../../model/data/krakow.csv")
 bg = "./krk.png"
 bg_coord = [(50.144579, 19.757886), (49.972568, 20.120011)]
 
