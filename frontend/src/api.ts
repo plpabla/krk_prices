@@ -5,7 +5,7 @@ import { usePriceStore } from "@/state/price";
 
 export async function getCities(): Promise<string[]> {
   try {
-    const response = await fetch(`/api/cities`);
+    const response = await fetch(`/api/cities/`);
     const data = await response.json();
     return data.map((item: City) => item.name);
   } catch (error) {
