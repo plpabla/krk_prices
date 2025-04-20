@@ -6,6 +6,7 @@ import sys
 from sklearn.preprocessing import MultiLabelBinarizer
 import pickle
 import warnings
+from math import radians, cos, sin, asin, sqrt
 
 
 def _drop_row_if_na(data, col_name):
@@ -52,6 +53,37 @@ def _drop_price_m2_outlier_rows(data, Q1_Q3: tuple[float, float]):
         lambda row: (row["price_m2"] < (Q1 - 1.5 * IQR))
         or (row["price_m2"] > (Q3 + 1.5 * IQR)),
     )
+
+from math import radians, cos, sin, asin, sqrt
+
+
+def _haversine(lat1, lon1, lat2, lon2):
+    """
+    Calculate the great circle distance between two points
+    on the earth (specified in decimal degrees).
+    Returns distance in kilometers.
+    """
+    # Convert decimal degrees to radians
+    lat1, lon1, lat2, lon2 = map(radians, [lat1, lon1, lat2, lon2])
+
+    # Haversine formula
+    dlat = lat2 - lat1
+    dlon = lon2 - lon1
+    a = sin(dlat / 2)**2 + cos(lat1) * cos(lat2) * sin(dlon / 2)**2
+    c = 2 * asin(sqrt(a))
+    r = 6371  # Radius of Earth in kilometers
+    return c * r
+
+
+def _add_distance_from_center(data):
+    center_lat = 50.0619474
+    center_lon = 19.9368564
+    data["distance_from_center"] = data.apply(
+        lambda row: _haversine(row["location_lat"], row["location_lon"], center_lat, center_lon),
+        axis=1
+    )
+    return data
+
 
 
 def _clear_wrong_build_year(data):
@@ -272,6 +304,8 @@ def preprocess_data(
         lambda row: "tbs" in row["name"].lower(),
     )
     data = _add_price_m2_column(data)
+    data = _add_distance_from_center(data)
+
     if is_train:
         config["q1_q3"] = _calculate_iqr(data)
         config["q1_q3_m2"] = _calculate_iqr_price_m2(data)
@@ -297,11 +331,6 @@ def preprocess_data(
     # data = _fill_empty_rooms(data, config["area_bins"], config["area_to_rooms_map"])
     data["rooms"] = data["rooms"].apply(_safe_convert_to_int)
     data = _drop_row_if_na(data, "rooms")
-
-    # TODO: Use it to drop price per m2 outliers only
-    ##data = _add_price_m2_column(data)
-
-
 
     # One-Hot Encoding
     utilities = [

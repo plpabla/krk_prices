@@ -38,9 +38,7 @@ def run(filename: str = "otodom"):
     test_data = pd.read_csv(f"../data/{filename}_district_test.csv")
 
     # Wybór cech i zmiennej docelowej
-    X_train = train_data.drop(
-        columns=["price", "price_m2"]
-    )  # Załóżmy, że przewidujemy 'price'. Musimy też usunąć 'price_m2'
+    X_train = train_data.drop(columns=["price", "price_m2"])
     y_train = train_data["price"]
     X_test = test_data.drop(columns=["price", "price_m2"])
     y_test = test_data["price"]
@@ -48,55 +46,40 @@ def run(filename: str = "otodom"):
     X_train, X_test = convert_str_to_category(X_train, X_test, city_name=filename)
 
     params_grid = {
-        "max_depth": [10],
+        "max_depth": [6],
         "learning_rate": [0.005],
-        "n_estimators": [10_000],
-        "subsample": [0.30],
+        "n_estimators": [5000],
+        "subsample": [0.3],
         "colsample_bytree": [0.8],
     }
 
-    # Inicjalizacja modelu
-    model = xgb.XGBRegressor(
+    # Inicjalizacja modelu bazowego
+    base_model = xgb.XGBRegressor(
         objective="reg:squarederror",
-        n_estimators=10_000,
-        learning_rate=0.01,
-        max_depth=8,
         random_state=42,
         enable_categorical=True,
     )
 
     model_grid = GridSearchCV(
-        estimator=model,
+        estimator=base_model,
         param_grid=params_grid,
-        scoring="neg_mean_absolute_error",
+        scoring="neg_root_mean_squared_error",
         cv=10,
         verbose=1,
         n_jobs=-1,
     )
 
-    # Trenowanie modelu
+    # Trenowanie GridSearch bez early stopping
     model_grid.fit(X_train, y_train)
-    model = model_grid.best_estimator_
-    print("  Najlepsze parametry: ", model_grid.best_params_)
-    print("  Najlepszy wynik: ", model_grid.best_score_)
 
-    # Ocena modelu
-    predictions = model.predict(X_test)
-
-    # Obliczenie MSE, RMSE i R²
-    mse = mean_squared_error(y_test, predictions)
-    rmse = np.sqrt(mse)
-    r2 = r2_score(y_test, predictions)
-
-    print(f"  Mean Squared Error (MSE): {mse}")
-    print(f"  Root Mean Squared Error (RMSE): {rmse}")
-    print(f"  R-squared (R²): {r2}")
+    print("  ✅ Najlepsze parametry: ", model_grid.best_params_)
+    print("  ✅ Najlepszy wynik (neg RMSE): ", model_grid.best_score_)
 
     # Zapisanie modelu do pliku
     with open(f"../out/{filename}_model.pkl", "wb") as file:
-        pickle.dump(model, file)
+        pickle.dump(model_grid.best_estimator_, file)
 
-    print("✅ Model XGBoost wytrenowany i zapisany!")
+    print("✅ Model XGBoost został wytrenowany i zapisany do pliku!")
 
 
 if __name__ == "__main__":
