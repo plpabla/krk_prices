@@ -2,7 +2,7 @@ import pickle
 import numpy as np
 from xgboost import XGBRegressor
 
-from schemas.estimate import EstimateInput, MarketType, OwnershipType, AdType
+from schemas.estimate import EstimateInput
 
 __all__ = ["model"]
 
@@ -62,6 +62,9 @@ class Model:
         form_data["utilities_winda"] = int(data.elevator)
         # form_data["utilities_garage"] = int(data.garage) # TODO: add in model or remove from frontend
         # TODO: available in frontend but not used: available from
+        form_data["distance_from_center"] = (
+            0.0  # TODO: missing calculation from address
+        )
 
         # Fill data_array with values from form_data using fetures array
         for i, feature in enumerate(features):
@@ -86,11 +89,13 @@ class Model:
         )
 
 
-model = Model("../model/out/xgboost_model.pkl", "../model/out/category_mappings.pkl")
+model = Model(
+    "../model/out/krakow_model.pkl", "../model/out/category_mappings_krakow.pkl"
+)
 
 
 def validate_schema(model: XGBRegressor) -> int:
-    """ " Validate schema of the model. Version 2.0.0"""
+    """ " Validate schema of the model. Version 2.1.0"""
     features = model.get_booster().feature_names
     expected_feature_names = [
         "ad_type",
@@ -112,6 +117,7 @@ def validate_schema(model: XGBRegressor) -> int:
         "utilities_pom. użytkowe",
         "utilities_taras",
         "utilities_winda",
+        "distance_from_center",
     ]
 
     # Check if all expected features are present regardless of order

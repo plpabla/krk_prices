@@ -7,6 +7,7 @@ from routes import estimate, cities
 
 origins = [
     "http://localhost:5173",
+    "http://frontend:5173",
 ]
 
 
