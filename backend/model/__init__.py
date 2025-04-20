@@ -92,7 +92,6 @@ model = Model("../model/out/xgboost_model.pkl", "../model/out/category_mappings.
 def validate_schema(model: XGBRegressor) -> int:
     """ " Validate schema of the model. Version 2.0.0"""
     features = model.get_booster().feature_names
-    print(">>> Model features:", features)
     expected_feature_names = [
         "ad_type",
         "area",

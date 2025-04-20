@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
+import os
 
 from routes import estimate, cities
 
@@ -35,4 +36,13 @@ app.add_middleware(
 if __name__ == "__main__":
     import uvicorn
 
-    uvicorn.run(app="main:app", host="localhost", port=8001, reload=True)
+    # Check if the WYCENAPPKA_PROD environment variable is set to true
+    is_prod = os.environ.get("WYCENAPPKA_PROD", "").lower() == "true"
+
+    # Set production mode settings if needed
+    if is_prod:
+        print("Running in production mode")
+        uvicorn.run(app="main:app", host="0.0.0.0", port=8001, log_level="info")
+    else:
+        print("Running in development mode")
+        uvicorn.run(app="main:app", host="localhost", port=8001, reload=True)

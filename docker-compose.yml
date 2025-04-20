@@ -1,0 +1,30 @@
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    # Remove public port exposure but keep container port for internal communication
+    expose:
+      - "8001"
+    environment:
+      - WYCENAPPKA_PROD=true
+    networks:
+      - internal
+    volumes:
+      - ./model/out:/model/out:ro
+
+  frontend:
+    build:
+      context: frontend
+      dockerfile: Dockerfile
+    ports:
+      - "8080:80" # Only expose frontend to the outside world
+    depends_on:
+      - backend
+    networks:
+      - internal
+
+# Define the internal network
+networks:
+  internal:
+    driver: bridge
