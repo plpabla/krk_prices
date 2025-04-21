@@ -11,8 +11,7 @@ ENV WYCENAPPKA_PROD="true"
 CMD ["python", "main.py"]
 # Copy source code
 COPY backend/ .
-# Volume will be used
-# COPY model/out/ ../model/out/
+# Note: we need a volume mounted at ../model/out/
 
 
 # Use the following command to build the Docker image (from parent directory!)

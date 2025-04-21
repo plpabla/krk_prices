@@ -1,6 +1,7 @@
 services:
   backend:
     build:
+      # build from the top level as we need requirements.txt
       context: .
       dockerfile: backend/Dockerfile
     # Remove public port exposure but keep container port for internal communication
