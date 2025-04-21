@@ -5,6 +5,7 @@ venv/
 *.csv
 !model/data/otodom.csv
 !model/data/krakow.csv
+!model/data/testowy.csv
 
 *.ipynb_checkpoints/
 *~
