@@ -5,6 +5,7 @@ import pickle
 from sklearn.metrics import mean_squared_error, r2_score
 from sklearn.model_selection import GridSearchCV
 import numpy as np
+import optuna
 
 
 def convert_str_to_category(
@@ -31,6 +32,32 @@ def convert_str_to_category(
         train[col] = train[col].cat.set_categories(test[col].cat.categories)
     return train, test
 
+def objective(trial):
+    # Proponowanie hiperparametrów
+    param = {
+        "objective": "reg:squarederror",
+        "max_depth": trial.suggest_int("max_depth", 3, 10),
+        "learning_rate": trial.suggest_float("learning_rate", 0.01, 0.3),
+        "subsample": trial.suggest_float("subsample", 0.5, 1.0),
+        "colsample_bytree": trial.suggest_float("colsample_bytree", 0.5, 1.0),
+        "n_estimators": 5000,
+        "early_stopping_rounds": 50,
+    }
+
+    # Dzielimy dane na train i valid
+    X_tr, X_val, y_tr, y_val = train_test_split(X_train, y_train, test_size=0.2, random_state=42)
+
+    model = xgb.XGBRegressor(**param)
+    model.fit(
+        X_tr, y_tr,
+        eval_set=[(X_val, y_val)],
+        verbose=False
+    )
+
+    preds = model.predict(X_val)
+    rmse = mean_squared_error(y_val, preds, squared=False)
+    return rmse
+
 
 def run(filename: str = "otodom"):
     # Wczytanie danych
@@ -45,13 +72,7 @@ def run(filename: str = "otodom"):
 
     X_train, X_test = convert_str_to_category(X_train, X_test, city_name=filename)
 
-    params_grid = {
-        "max_depth": [10],  # głębokość drzew - kontroluje złożoność
-        "learning_rate": [0.005],  # szybkość uczenia
-        "n_estimators": [20000],  # liczba drzew
-        "subsample": [0.3],  # ile danych używać do budowy każdego drzewa
-        "colsample_bytree": [0.8],  # ile cech brać pod uwagę na drzewo
-    }
+
 
     # Inicjalizacja modelu bazowego
     base_model = xgb.XGBRegressor(

@@ -54,8 +54,6 @@ def _drop_price_m2_outlier_rows(data, Q1_Q3: tuple[float, float]):
         or (row["price_m2"] > (Q3 + 1.5 * IQR)),
     )
 
-from math import radians, cos, sin, asin, sqrt
-
 
 def _haversine(lat1, lon1, lat2, lon2):
     """
@@ -76,8 +74,8 @@ def _haversine(lat1, lon1, lat2, lon2):
 
 
 def _add_distance_from_center(data):
-    center_lat = 50.0619474
-    center_lon = 19.9368564
+    center_lat = 50.055
+    center_lon = 19.94
     data["distance_from_center"] = data.apply(
         lambda row: _haversine(row["location_lat"], row["location_lon"], center_lat, center_lon),
         axis=1
@@ -85,6 +83,14 @@ def _add_distance_from_center(data):
     return data
 
 
+def _add_distance_from_other_expensive(data):
+    area_lat = 50.065
+    area_lon = 19.93
+    data["distance_from_other_expensive"] = data.apply(
+        lambda row: _haversine(row["location_lat"], row["location_lon"], area_lat, area_lon),
+        axis=1
+    )
+    return data
 
 def _clear_wrong_build_year(data):
     data = _drop_row_if_na(data, "build_year")
@@ -305,6 +311,7 @@ def preprocess_data(
     )
     data = _add_price_m2_column(data)
     data = _add_distance_from_center(data)
+    data = _add_distance_from_other_expensive(data)
 
     if is_train:
         config["q1_q3"] = _calculate_iqr(data)
