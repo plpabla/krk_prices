@@ -65,6 +65,9 @@ class Model:
         form_data["distance_from_center"] = (
             0.0  # TODO: missing calculation from address
         )
+        form_data["distance_from_other_expensive"] = (
+            0.0  # TODO: missing calculation from address
+        )
 
         # Fill data_array with values from form_data using fetures array
         for i, feature in enumerate(features):
@@ -95,7 +98,7 @@ model = Model(
 
 
 def validate_schema(model: XGBRegressor) -> int:
-    """ " Validate schema of the model. Version 2.1.0"""
+    """ " Validate schema of the model. Version 2.1.1"""
     features = model.get_booster().feature_names
     expected_feature_names = [
         "ad_type",
@@ -118,6 +121,7 @@ def validate_schema(model: XGBRegressor) -> int:
         "utilities_taras",
         "utilities_winda",
         "distance_from_center",
+        "distance_from_other_expensive"
     ]
 
     # Check if all expected features are present regardless of order
