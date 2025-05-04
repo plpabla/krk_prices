@@ -6,7 +6,11 @@ import sys
 from sklearn.preprocessing import MultiLabelBinarizer
 import pickle
 import warnings
-from math import radians, cos, sin, asin, sqrt
+
+from distanse_calc import (
+    calc_distance_from_center,
+    calc_distance_from_other_expensive,
+)
 
 
 def _drop_row_if_na(data, col_name):
@@ -54,43 +58,6 @@ def _drop_price_m2_outlier_rows(data, Q1_Q3: tuple[float, float]):
         or (row["price_m2"] > (Q3 + 1.5 * IQR)),
     )
 
-
-def _haversine(lat1, lon1, lat2, lon2):
-    """
-    Calculate the great circle distance between two points
-    on the earth (specified in decimal degrees).
-    Returns distance in kilometers.
-    """
-    # Convert decimal degrees to radians
-    lat1, lon1, lat2, lon2 = map(radians, [lat1, lon1, lat2, lon2])
-
-    # Haversine formula
-    dlat = lat2 - lat1
-    dlon = lon2 - lon1
-    a = sin(dlat / 2)**2 + cos(lat1) * cos(lat2) * sin(dlon / 2)**2
-    c = 2 * asin(sqrt(a))
-    r = 6371  # Radius of Earth in kilometers
-    return c * r
-
-
-def _add_distance_from_center(data):
-    center_lat = 50.055
-    center_lon = 19.94
-    data["distance_from_center"] = data.apply(
-        lambda row: _haversine(row["location_lat"], row["location_lon"], center_lat, center_lon),
-        axis=1
-    )
-    return data
-
-
-def _add_distance_from_other_expensive(data):
-    area_lat = 50.065
-    area_lon = 19.93
-    data["distance_from_other_expensive"] = data.apply(
-        lambda row: _haversine(row["location_lat"], row["location_lon"], area_lat, area_lon),
-        axis=1
-    )
-    return data
 
 def _clear_wrong_build_year(data):
     data = _drop_row_if_na(data, "build_year")
@@ -168,6 +135,24 @@ def _fill_building_floors_with_common_in_given_district(data, district_median):
 
 def _safe_convert_to_int(value):
     return int(value) if str(value).isdigit() else np.nan
+
+
+def _add_distance_from_center(data):
+    data["distance_from_center"] = data.apply(
+        lambda row: calc_distance_from_center(row["location_lat"], row["location_lon"]),
+        axis=1,
+    )
+    return data
+
+
+def _add_distance_from_other_expensive(data):
+    data["distance_from_other_expensive"] = data.apply(
+        lambda row: calc_distance_from_other_expensive(
+            row["location_lat"], row["location_lon"]
+        ),
+        axis=1,
+    )
+    return data
 
 
 def _calculate_rooms_per_area(data):

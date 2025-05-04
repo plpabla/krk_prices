@@ -3,6 +3,11 @@ import numpy as np
 from xgboost import XGBRegressor
 
 from schemas.estimate import EstimateInput
+from model.util import (
+    calculate_lat_lon,
+    calc_distance_from_center,
+    calc_distance_from_other_expensive,
+)
 
 __all__ = ["model"]
 
@@ -46,13 +51,14 @@ class Model:
         form_data["ownership"] = self._map("ownership", data.ownership)
         form_data["state"] = self._map("state", data.state)
 
-        # Numerical features - todo
         form_data["area"] = data.area
         form_data["build_year"] = 2000  # TODO: missing in backend
         form_data["building_floors"] = data.floorsInBuilding
         form_data["floor"] = data.floor
-        form_data["location_lat"] = 50.0647  # TODO: missing calculation from address
-        form_data["location_lon"] = 19.9450  # TODO: missing calculation from address
+
+        lat, lon = calculate_lat_lon(data.location)
+        form_data["location_lat"] = lat
+        form_data["location_lon"] = lon
         form_data["rooms"] = data.rooms
         form_data["utilities_balkon"] = int(data.balcony)
         form_data["utilities_oddzielna kuchnia"] = int(data.separate_kitchen)
@@ -62,12 +68,12 @@ class Model:
         form_data["utilities_winda"] = int(data.elevator)
         # form_data["utilities_garage"] = int(data.garage) # TODO: add in model or remove from frontend
         # TODO: available in frontend but not used: available from
-        form_data["distance_from_center"] = (
-            0.0  # TODO: missing calculation from address
+        form_data["distance_from_center"] = calc_distance_from_center(lat, lon)
+        form_data["distance_from_other_expensive"] = calc_distance_from_other_expensive(
+            lat, lon
         )
-        form_data["distance_from_other_expensive"] = (
-            0.0  # TODO: missing calculation from address
-        )
+
+        print(">>> Form data for prediction:", form_data)
 
         # Fill data_array with values from form_data using fetures array
         for i, feature in enumerate(features):
@@ -121,7 +127,7 @@ def validate_schema(model: XGBRegressor) -> int:
         "utilities_taras",
         "utilities_winda",
         "distance_from_center",
-        "distance_from_other_expensive"
+        "distance_from_other_expensive",
     ]
 
     # Check if all expected features are present regardless of order
