@@ -1,3 +1,4 @@
+import { NavLink } from "react-router-dom";
 import "./Navbar.css"; // Import the CSS file for styling
 
 export default function Navbar() {
@@ -5,13 +6,13 @@ export default function Navbar() {
     <nav>
       <ul>
         <li>
-          <a href="#">Wycena</a>
+          <NavLink to="/">Wycena</NavLink>
         </li>
         <li>
-          <a href="#">Analiza zdjęć</a>
+          <NavLink to="/photo">Analiza zdjęć</NavLink>
         </li>
         <li>
-          <a href="#">Kontakt</a>
+          <NavLink to="/contact">Kontakt</NavLink>
         </li>
       </ul>
     </nav>

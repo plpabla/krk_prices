@@ -4,6 +4,7 @@ import { Container } from "@mui/material";
 
 import FlatEstimationForm from "@/components/FlatEstimationForm";
 import PriceEstimationPage from "@/components/PriceEstimationPage";
+import PhotoUpload from "@/components/PhotoUpload";
 import Footer from "@/components/Footer";
 import Navbar from "./components/Navbar";
 
@@ -24,6 +25,7 @@ function App() {
         <Routes>
           <Route path="/" element={<FlatEstimationForm />} />
           <Route path="/estimate" element={<PriceEstimationPage />} />
+          <Route path="/photo" element={<PhotoUpload />} />
         </Routes>
         <Footer />
       </Container>

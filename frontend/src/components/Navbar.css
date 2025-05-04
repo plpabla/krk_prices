@@ -11,7 +11,7 @@ ul {
 
 li {
   float: left;
-  padding: 8px 16px;
+  margin: 0px 0px;
   font-size: 20px;
 }
 
@@ -28,5 +28,5 @@ li a:hover {
 }
 
 .active {
-  background-color: #4caf50;
+  background-color: #15551d;
 }
