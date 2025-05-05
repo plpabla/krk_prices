@@ -32,8 +32,9 @@ export default function PhotoUpload() {
       formData.append("file", values.file);
 
       uploadPhoto(values.file)
-        .then(() => {
-          alert("Zdjęcie zostało przesłane pomyślnie!");
+        .then((res) => {
+          alert(`Zdjęcie (${res.filename}) zostało przesłane pomyślnie!`);
+          console.log(res);
           setImgSrc("");
           if (fileRef.current) {
             fileRef.current.value = "";

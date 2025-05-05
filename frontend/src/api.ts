@@ -40,7 +40,11 @@ export async function getPriceEstimate(data: FormData): Promise<void> {
   setPrice(res.price);
 }
 
-export async function uploadPhoto(file: File): Promise<void> {
+export interface ResPhoto {
+  filename: string;
+}
+
+export async function uploadPhoto(file: File): Promise<ResPhoto> {
   const data = new FormData();
   data.append("file", file);
 
@@ -52,4 +56,6 @@ export async function uploadPhoto(file: File): Promise<void> {
   if (!response.ok) {
     throw new Error("Failed to upload photo");
   }
+
+  return await response.json();
 }
