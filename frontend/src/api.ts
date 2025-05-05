@@ -1,4 +1,3 @@
-import { FormData } from "@/types/form";
 import { City } from "@/types/backend";
 import { PriceEstimate } from "@/types/backend";
 import { usePriceStore } from "@/state/price";
@@ -39,4 +38,18 @@ export async function getPriceEstimate(data: FormData): Promise<void> {
   const res: PriceEstimate = await response.json();
 
   setPrice(res.price);
+}
+
+export async function uploadPhoto(file: File): Promise<void> {
+  const data = new FormData();
+  data.append("file", file);
+
+  const response = await fetch(`/api/upload`, {
+    method: "POST",
+    body: data,
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to upload photo");
+  }
 }

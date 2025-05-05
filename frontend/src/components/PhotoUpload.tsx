@@ -1,6 +1,8 @@
 import { useRef, useState } from "react";
 import { Formik, Form, FormikHelpers } from "formik";
 
+import { uploadPhoto } from "@/api";
+
 interface FormValues {
   file: File | null;
 }
@@ -29,16 +31,17 @@ export default function PhotoUpload() {
       const formData = new FormData();
       formData.append("file", values.file);
 
-      fetch("http://localhost:8000/upload", {
-        method: "POST",
-        body: formData,
-      })
-        .then((response) => response.json())
-        .then((data) => {
-          console.log(data);
+      uploadPhoto(values.file)
+        .then(() => {
+          alert("Zdjęcie zostało przesłane pomyślnie!");
+          setImgSrc("");
+          if (fileRef.current) {
+            fileRef.current.value = "";
+          }
         })
         .catch((error) => {
-          console.error("Error:", error);
+          console.error("Error uploading photo:", error);
+          alert("Wystąpił błąd podczas przesyłania zdjęcia.");
         })
         .finally(() => {
           setSubmitting(false);
