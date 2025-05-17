@@ -7,5 +7,5 @@ export const defaultPhotoFeedbackProps: PhotoFeedbackProps = {
 };
 
 export default function PhotoFeedback({ luxuryLevel }: PhotoFeedbackProps) {
-  return <h2>Analiza zdjęcia - poziom luksusu: {luxuryLevel}/5</h2>;
+  return <h2>Analiza zdjęcia - poziom luksusu: {luxuryLevel}/10</h2>;
 }

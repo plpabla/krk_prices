@@ -1,19 +1,25 @@
 from fastapi import APIRouter, UploadFile, File
+import base64
+
 from schemas.photo_feedback import PhotoFeedback
+from model.GPT import analyze_apartment_photos
 
 router = APIRouter(prefix="")
 
 
 async def send_file_to_model(file: UploadFile) -> PhotoFeedback:
-    # TODO: Implement me
-    """
-    Simulate sending a file to a model and getting a response.
-    In a real-world scenario, this would involve sending the file to a machine learning model
-    and receiving the prediction.
-    """
-    # Simulate processing the file and returning a response
-    # In reality, you would send the file to your model here
-    return PhotoFeedback(luxury_level=5)  # Example response
+    photo = await file.read()
+    photo_base64 = base64.b64encode(photo).decode("utf-8")
+    resp = {
+        "luxury_level": 0,
+    }
+    try:
+        resp = analyze_apartment_photos([photo_base64])
+    except Exception:
+        # we'll return default response
+        pass
+
+    return PhotoFeedback(luxury_level=resp["luxury_level"])  # Example response
 
 
 @router.post("/upload")
