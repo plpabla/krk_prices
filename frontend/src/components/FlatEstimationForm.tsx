@@ -153,8 +153,6 @@ const FlatEstimationForm: React.FC = () => {
               />
             </Grid>
             <Submit />
-            {/* Spacer to make the form not stick to the bottom */}
-            <div style={{ marginBottom: "100px" }} />
           </form>
         )}
       </Formik>
