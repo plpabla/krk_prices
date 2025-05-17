@@ -52,7 +52,7 @@ def analyze_apartment_photos(images):
                     "text": (
                         "Na podstawie **wszystkich załączonych zdjęć** mieszkania:\n\n"
                         "1. Odpowiedz w formacie JSON (po polsku), zawierającym:\n"
-                        "- type: ogólny typ mieszkania (np. kawalerka, 2-pokojowe itp.). unknown, jeżeli nie możesz tego określić\n"
+                        "- type: ogólny typ mieszkania (np. kawalerka, 2-pokojowe itp.) lub typ pomieszczenia w przypadku jednego zdjęcia. unknown, jeżeli nie możesz tego określić\n"
                         "- pros: lista mocnych stron wnętrza,\n"
                         "- to_fix: lista rzeczy do poprawy,\n"
                         "- luxury_level: liczba od 1 do 10 (całościowa),\n\n"

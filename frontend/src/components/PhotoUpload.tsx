@@ -42,6 +42,10 @@ export default function PhotoUpload() {
           console.log(">>>", res);
           const photoFeedbackData: PhotoFeedbackProps = {
             luxuryLevel: parseInt(res.luxury_level, 10),
+            type: res.type,
+            pros: res.pros,
+            to_fix: res.to_fix,
+            description: res.description,
           };
           setPhotoFeedback(photoFeedbackData);
           setProcessed(true);

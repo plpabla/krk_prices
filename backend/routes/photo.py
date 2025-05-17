@@ -20,7 +20,13 @@ async def send_file_to_model(file: UploadFile) -> PhotoFeedback:
         # we'll return default response
         pass
 
-    return PhotoFeedback(luxury_level=resp["luxury_level"])  # Example response
+    return PhotoFeedback(
+        luxury_level=resp["luxury_level"],
+        type=resp["type"],
+        pros=resp["pros"],
+        to_fix=resp["to_fix"],
+        description=resp["description"],
+    )
 
 
 @router.post("/upload")

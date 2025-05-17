@@ -3,6 +3,7 @@ export interface PhotoFeedbackProps {
   type: string;
   pros: string[];
   to_fix: string[];
+  description: string;
 }
 
 export const defaultPhotoFeedbackProps: PhotoFeedbackProps = {
@@ -10,8 +11,43 @@ export const defaultPhotoFeedbackProps: PhotoFeedbackProps = {
   type: "unknown",
   pros: [],
   to_fix: [],
+  description: "",
 };
 
-export default function PhotoFeedback({ luxuryLevel }: PhotoFeedbackProps) {
-  return <h2>Analiza zdjęcia - poziom luksusu: {luxuryLevel}/10</h2>;
+export default function PhotoFeedback({
+  luxuryLevel,
+  type,
+  pros,
+  to_fix,
+  description,
+}: PhotoFeedbackProps) {
+  return (
+    <>
+      <h2>
+        Analiza zdjęcia {type && type !== "unknown" ? `(${type}) ` : ""}- poziom
+        luksusu: {luxuryLevel}/10
+      </h2>
+      <div>
+        <h3>Co jest dobrze?</h3>
+        <ul>
+          {pros.map((item, index) => (
+            <li key={index}>{item}</li>
+          ))}
+        </ul>
+        <h3>Co można poprawić?</h3>
+        <ul>
+          {to_fix.map((item, index) => (
+            <li key={index}>{item}</li>
+          ))}
+        </ul>
+
+        {description && (
+          <div>
+            <h3>Opis:</h3>
+            <p>{description}</p>
+          </div>
+        )}
+      </div>
+    </>
+  );
 }
