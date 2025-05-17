@@ -15,6 +15,7 @@ async def send_file_to_model(file: UploadFile) -> PhotoFeedback:
     }
     try:
         resp = analyze_apartment_photos([photo_base64])
+        print(">>>", resp)
     except Exception:
         # we'll return default response
         pass

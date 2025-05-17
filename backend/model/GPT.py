@@ -41,7 +41,7 @@ def analyze_apartment_photos(images):
                 "Jesteś ekspertem od sprzedaży nieruchomości. "
                 "Analizujesz zdjęcia mieszkań pod kątem atrakcyjności wizualnej, stylu i ogólnego wrażenia. "
                 "Zwróć uwagę na wystrój, światło, porządek, kolorystykę. Oceniaj jak potencjalny kupujący."
-                "**Odpowiedź zwróć w formacie JSON bez dodatkowego formatowania**. W przypadku braku danych zwróć pustą listę lub null. "
+                "**Odpowiedź zwróć w formacie JSON bez dodatkowego formatowania**. W przypadku braku danych zwróć pustą listę lub null w poszczególnych polach zachowując przedstawiony format. "
             ),
         },
         {
