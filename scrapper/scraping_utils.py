@@ -135,13 +135,15 @@ def extract_data(
             ad_data.get("location", {}).get("coordinates", {}).get("longitude", None)
         )
 
+        rooms_num = ad_data.get("target", {}).get("Rooms_num", [0])[0]
+
         return RealEstateListing(
             slug=url.split("/")[-1],
             url=url,
             name=ad_data.get("title", None),
             price=ad_data.get("target", {}).get("Price", None),
             area=ad_data.get("target", {}).get("Area", None),
-            rooms=ad_data.get("target", {}).get("Rooms_num", {})[0],
+            rooms=rooms_num,
             build_year=ad_data.get("target", {}).get("Build_year", None),
             utilities=ad_data.get("features", []),
             location=location,
