@@ -1,5 +1,4 @@
-import { City } from "@/types/backend";
-import { PriceEstimate } from "@/types/backend";
+import { City, PriceEstimate, ResPhoto } from "@/types/backend";
 import { usePriceStore } from "@/state/price";
 
 export async function getCities(): Promise<string[]> {
@@ -38,10 +37,6 @@ export async function getPriceEstimate(data: FormData): Promise<void> {
   const res: PriceEstimate = await response.json();
 
   setPrice(res.price);
-}
-
-export interface ResPhoto {
-  filename: string;
 }
 
 export async function uploadPhoto(file: File): Promise<ResPhoto> {

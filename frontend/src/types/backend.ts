@@ -9,3 +9,7 @@ export type District = {
 export type PriceEstimate = {
   price: number;
 };
+
+export type ResPhoto = {
+  luxury_level: string;
+};

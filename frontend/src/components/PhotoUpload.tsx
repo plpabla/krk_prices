@@ -2,6 +2,8 @@ import { useRef, useState } from "react";
 import { Formik, Form, FormikHelpers } from "formik";
 
 import { uploadPhoto } from "@/api";
+import PhotoFeedback from "./PhotoFeedback";
+import { PhotoFeedbackProps, defaultPhotoFeedbackProps } from "./PhotoFeedback";
 
 interface FormValues {
   file: File | null;
@@ -9,6 +11,10 @@ interface FormValues {
 
 export default function PhotoUpload() {
   const [imgSrc, setImgSrc] = useState<string>("");
+  const [processed, setProcessed] = useState<boolean>(false);
+  const [photoFeedback, setPhotoFeedback] = useState<PhotoFeedbackProps>(
+    defaultPhotoFeedbackProps
+  );
   const fileRef = useRef<HTMLInputElement>(null);
 
   const displayFile = (file: File) => {
@@ -33,12 +39,12 @@ export default function PhotoUpload() {
 
       uploadPhoto(values.file)
         .then((res) => {
-          alert(`Zdjęcie (${res.filename}) zostało przesłane pomyślnie!`);
-          console.log(res);
-          setImgSrc("");
-          if (fileRef.current) {
-            fileRef.current.value = "";
-          }
+          console.log(">>>", res);
+          const photoFeedbackData: PhotoFeedbackProps = {
+            luxuryLevel: parseInt(res.luxury_level, 10),
+          };
+          setPhotoFeedback(photoFeedbackData);
+          setProcessed(true);
         })
         .catch((error) => {
           console.error("Error uploading photo:", error);
@@ -47,6 +53,9 @@ export default function PhotoUpload() {
         .finally(() => {
           setSubmitting(false);
         });
+    } else {
+      alert("Proszę wybrać zdjęcie.");
+      setSubmitting(false);
     }
   };
 
@@ -67,16 +76,21 @@ export default function PhotoUpload() {
                   const file = e.target.files[0];
                   setFieldValue("file", file);
                   displayFile(file);
+                  setProcessed(false);
                 }
               }}
             />
-            <div>{imgSrc && <img src={imgSrc} alt="Preview" />}</div>
+            <div>
+              {imgSrc && <img src={imgSrc} alt="Preview" width="100%" />}
+            </div>
             <button type="submit" disabled={isSubmitting}>
               {isSubmitting ? "Wysyłanie..." : "Wyślij"}
             </button>
           </Form>
         )}
       </Formik>
+
+      {processed && <PhotoFeedback {...photoFeedback} />}
     </div>
   );
 }
