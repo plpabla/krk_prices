@@ -11,6 +11,7 @@ venv/
 *~
 
 example_photos/
+photos/
 
 # Python.gitignore
 # Byte-compiled / optimized / DLL files
