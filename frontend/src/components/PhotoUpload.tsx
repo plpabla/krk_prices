@@ -4,6 +4,7 @@ import { Formik, Form, FormikHelpers } from "formik";
 import { uploadPhotos } from "@/api";
 import PhotoFeedback from "./PhotoFeedback";
 import { PhotoFeedbackProps, defaultPhotoFeedbackProps } from "./PhotoFeedback";
+import { useFormStore } from "@/state/formData";
 
 interface FormValues {
   files: File[];
@@ -16,6 +17,7 @@ export default function PhotoUpload() {
     defaultPhotoFeedbackProps
   );
   const fileRef = useRef<HTMLInputElement>(null);
+  const { formData } = useFormStore();
 
   const displayFiles = (files: File[]) => {
     setImgSrc([]);
@@ -38,7 +40,7 @@ export default function PhotoUpload() {
   ) => {
     if (values.files.length > 0) {
       setSubmitting(true);
-      uploadPhotos(values.files)
+      uploadPhotos(values.files, JSON.stringify(formData))
         .then((res) => {
           console.log(">>>", res);
           const photoFeedbackData: PhotoFeedbackProps = {

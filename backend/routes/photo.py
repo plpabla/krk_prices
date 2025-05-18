@@ -1,4 +1,4 @@
-from fastapi import APIRouter, UploadFile, File
+from fastapi import APIRouter, UploadFile, File, Form
 import base64
 
 from schemas.photo_feedback import PhotoFeedback
@@ -8,7 +8,9 @@ import asyncio
 router = APIRouter(prefix="")
 
 
-async def send_files_to_model(file: list[UploadFile]) -> PhotoFeedback:
+async def send_files_to_model(
+    file: list[UploadFile], form_data: str = ""
+) -> PhotoFeedback:
     async def read_file(f):
         return await f.read()
 
@@ -19,7 +21,7 @@ async def send_files_to_model(file: list[UploadFile]) -> PhotoFeedback:
         "luxury_level": 0,
     }
     try:
-        resp = analyze_apartment_photos(photos_base64)
+        resp = analyze_apartment_photos(photos_base64, form_data)
         print(">>>", resp)
     except Exception:
         # we'll return default response
@@ -34,6 +36,9 @@ async def send_files_to_model(file: list[UploadFile]) -> PhotoFeedback:
 
 
 @router.post("/upload")
-async def upload_photo(files: list[UploadFile] = File(...)) -> PhotoFeedback:
-    resp = await send_files_to_model(files)
+async def upload_photo(
+    files: list[UploadFile] = File(...),
+    parameters: str = Form(""),
+) -> PhotoFeedback:
+    resp = await send_files_to_model(files, parameters)
     return resp

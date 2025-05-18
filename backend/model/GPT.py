@@ -29,7 +29,7 @@ def load_images_from_disc(image_paths):
     return images_b64
 
 
-def analyze_apartment_photos(images, metadata=None):
+def analyze_apartment_photos(images, metadata: str = None):
     image_contents = []
     for img in images:
         image_contents.append(
@@ -43,7 +43,7 @@ def analyze_apartment_photos(images, metadata=None):
     if metadata:
         metadata_description = (
             "\nOto dane ogłoszenia, które możesz uwzględnić w opisie mieszkania:\n"
-            f"{json.dumps(metadata, ensure_ascii=False, indent=2)}"
+            f"{metadata}\n\n"
         )
 
     messages = [
@@ -118,6 +118,7 @@ if __name__ == "__main__":
 
     images_b64 = load_images_from_disc(image_files)
     metadata = load_apartment_metadata(metadata_path)
+    metadata = json.dumps(metadata, ensure_ascii=False, indent=2)
     result = analyze_apartment_photos(images_b64, metadata=metadata)
     print(result)
 

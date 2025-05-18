@@ -55,8 +55,12 @@ export async function uploadPhoto(file: File): Promise<ResPhoto> {
   return await response.json();
 }
 
-export async function uploadPhotos(files: File[]): Promise<ResPhoto> {
+export async function uploadPhotos(
+  files: File[],
+  form_data: string
+): Promise<ResPhoto> {
   const data = new FormData();
+  data.append("parameters", form_data);
   files.forEach((file) => {
     data.append("files", file);
   });
