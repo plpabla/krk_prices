@@ -3,18 +3,23 @@ import base64
 
 from schemas.photo_feedback import PhotoFeedback
 from model.GPT import analyze_apartment_photos
+import asyncio
 
 router = APIRouter(prefix="")
 
 
-async def send_file_to_model(file: UploadFile) -> PhotoFeedback:
-    photo = await file.read()
-    photo_base64 = base64.b64encode(photo).decode("utf-8")
+async def send_files_to_model(file: list[UploadFile]) -> PhotoFeedback:
+    async def read_file(f):
+        return await f.read()
+
+    photos = await asyncio.gather(*(read_file(f) for f in file))
+
+    photos_base64 = [base64.b64encode(photo).decode("utf-8") for photo in photos]
     resp = {
         "luxury_level": 0,
     }
     try:
-        resp = analyze_apartment_photos([photo_base64])
+        resp = analyze_apartment_photos(photos_base64)
         print(">>>", resp)
     except Exception:
         # we'll return default response
@@ -30,6 +35,6 @@ async def send_file_to_model(file: UploadFile) -> PhotoFeedback:
 
 
 @router.post("/upload")
-async def upload_photo(file: UploadFile = File(...)) -> PhotoFeedback:
-    resp = await send_file_to_model(file)
+async def upload_photo(files: list[UploadFile] = File(...)) -> PhotoFeedback:
+    resp = await send_files_to_model(files)
     return resp

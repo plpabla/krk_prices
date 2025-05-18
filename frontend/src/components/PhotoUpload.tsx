@@ -1,12 +1,12 @@
 import { useRef, useState } from "react";
 import { Formik, Form, FormikHelpers } from "formik";
 
-import { uploadPhoto } from "@/api";
+import { uploadPhotos } from "@/api";
 import PhotoFeedback from "./PhotoFeedback";
 import { PhotoFeedbackProps, defaultPhotoFeedbackProps } from "./PhotoFeedback";
 
 interface FormValues {
-  file: File | null;
+  files: File[];
 }
 
 export default function PhotoUpload() {
@@ -26,18 +26,16 @@ export default function PhotoUpload() {
   };
 
   const initialValues: FormValues = {
-    file: null,
+    files: [],
   };
 
   const handleSubmit = (
     values: FormValues,
     { setSubmitting }: FormikHelpers<FormValues>
   ) => {
-    if (values.file) {
-      const formData = new FormData();
-      formData.append("file", values.file);
-
-      uploadPhoto(values.file)
+    if (values.files.length > 0) {
+      setSubmitting(true);
+      uploadPhotos(values.files)
         .then((res) => {
           console.log(">>>", res);
           const photoFeedbackData: PhotoFeedbackProps = {
@@ -70,16 +68,17 @@ export default function PhotoUpload() {
         {({ setFieldValue, isSubmitting }) => (
           <Form>
             <input
-              id="file"
-              name="file"
+              id="files"
+              name="files"
               type="file"
               accept="image/*"
               ref={fileRef}
+              multiple
               onChange={(e) => {
-                if (e.target.files) {
-                  const file = e.target.files[0];
-                  setFieldValue("file", file);
-                  displayFile(file);
+                if (e.target.files && e.target.files.length > 0) {
+                  const filesArray = Array.from(e.target.files);
+                  setFieldValue("files", filesArray);
+                  displayFile(filesArray[0]); // Display preview of the first image
                   setProcessed(false);
                 }
               }}

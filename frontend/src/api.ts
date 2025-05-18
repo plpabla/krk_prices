@@ -54,3 +54,21 @@ export async function uploadPhoto(file: File): Promise<ResPhoto> {
 
   return await response.json();
 }
+
+export async function uploadPhotos(files: File[]): Promise<ResPhoto> {
+  const data = new FormData();
+  files.forEach((file) => {
+    data.append("files", file);
+  });
+
+  const response = await fetch(`/api/upload`, {
+    method: "POST",
+    body: data,
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to upload photos");
+  }
+
+  return await response.json();
+}
