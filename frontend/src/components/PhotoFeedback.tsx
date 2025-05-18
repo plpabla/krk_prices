@@ -1,6 +1,5 @@
 export interface PhotoFeedbackProps {
   luxuryLevel: number;
-  type: string;
   pros: string[];
   to_fix: string[];
   description: string;
@@ -8,7 +7,6 @@ export interface PhotoFeedbackProps {
 
 export const defaultPhotoFeedbackProps: PhotoFeedbackProps = {
   luxuryLevel: 0,
-  type: "unknown",
   pros: [],
   to_fix: [],
   description: "",
@@ -16,17 +14,13 @@ export const defaultPhotoFeedbackProps: PhotoFeedbackProps = {
 
 export default function PhotoFeedback({
   luxuryLevel,
-  type,
   pros,
   to_fix,
   description,
 }: PhotoFeedbackProps) {
   return (
     <>
-      <h2>
-        Analiza zdjęcia {type && type !== "unknown" ? `(${type}) ` : ""}- poziom
-        luksusu: {luxuryLevel}/10
-      </h2>
+      <h2>Analiza zdjęcia - poziom luksusu: {luxuryLevel}/10</h2>
       <div>
         <h3>Co jest dobrze?</h3>
         <ul>

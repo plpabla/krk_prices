@@ -27,7 +27,6 @@ async def send_files_to_model(file: list[UploadFile]) -> PhotoFeedback:
 
     return PhotoFeedback(
         luxury_level=resp["luxury_level"],
-        type=resp["type"],
         pros=resp["pros"],
         to_fix=resp["to_fix"],
         description=resp["description"],
