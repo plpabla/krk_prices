@@ -120,3 +120,5 @@ if __name__ == "__main__":
     metadata = load_apartment_metadata(metadata_path)
     result = analyze_apartment_photos(images_b64, metadata=metadata)
     print(result)
+
+#<3
