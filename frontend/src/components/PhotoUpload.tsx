@@ -10,19 +10,22 @@ interface FormValues {
 }
 
 export default function PhotoUpload() {
-  const [imgSrc, setImgSrc] = useState<string>("");
+  const [imgSrc, setImgSrc] = useState<string[]>([]);
   const [processed, setProcessed] = useState<boolean>(false);
   const [photoFeedback, setPhotoFeedback] = useState<PhotoFeedbackProps>(
     defaultPhotoFeedbackProps
   );
   const fileRef = useRef<HTMLInputElement>(null);
 
-  const displayFile = (file: File) => {
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      setImgSrc(reader.result as string);
-    };
-    reader.readAsDataURL(file);
+  const displayFiles = (files: File[]) => {
+    setImgSrc([]);
+    files.forEach((file) => {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImgSrc((prev) => [...prev, reader.result as string]);
+      };
+      reader.readAsDataURL(file);
+    });
   };
 
   const initialValues: FormValues = {
@@ -78,13 +81,21 @@ export default function PhotoUpload() {
                 if (e.target.files && e.target.files.length > 0) {
                   const filesArray = Array.from(e.target.files);
                   setFieldValue("files", filesArray);
-                  displayFile(filesArray[0]); // Display preview of the first image
+                  displayFiles(filesArray);
                   setProcessed(false);
                 }
               }}
             />
             <div>
-              {imgSrc && <img src={imgSrc} alt="Preview" width="100%" />}
+              {imgSrc.map((src, index) => (
+                <img
+                  key={index}
+                  src={src}
+                  alt={`Preview ${index + 1}`}
+                  width="30%"
+                  style={{ margin: "5px" }}
+                />
+              ))}
             </div>
             <button type="submit" disabled={isSubmitting}>
               {isSubmitting ? "Wysyłanie..." : "Wyślij"}
