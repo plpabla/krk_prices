@@ -32,6 +32,8 @@ export interface FormData {
   basement: boolean;
 
   rent: number | null;
+
+  files: File[];
 }
 
 export const defaultFormData: FormData = {
@@ -58,4 +60,6 @@ export const defaultFormData: FormData = {
   garage: false,
   elevator: false,
   basement: false,
+
+  files: [],
 };

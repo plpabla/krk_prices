@@ -1,4 +1,5 @@
 import React from "react";
+import { useState, useEffect, useRef } from "react";
 import { Formik } from "formik";
 import { Grid } from "@mui/material";
 import { useNavigate } from "react-router-dom";
@@ -19,26 +20,61 @@ import Location from "@/components/form-fields/Location";
 import NumericField from "@/components/form-fields/NumericField";
 import BoxcheckField from "@/components/form-fields/BoxcheckField";
 import ListField from "@/components/form-fields/ListField";
+import { FormData } from "@/types/form";
+
+const Waiting = () => (
+  <div>
+    <h2>Przetwarzanie...</h2>
+    <p>Proszę czekać, trwa przetwarzanie formularza.</p>
+  </div>
+);
 
 const FlatEstimationForm: React.FC = () => {
   const navigate = useNavigate();
   const { formData, setFormData } = useFormStore();
+  const [processing, setProcessing] = useState<boolean>(false);
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [imgSrc, setImgSrc] = useState<string[]>([]);
+
+  useEffect(() => {
+    displayFiles(formData.files);
+  }, []);
+
+  const displayFiles = (files: File[]) => {
+    setImgSrc([]);
+    files.forEach((file) => {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImgSrc((prev) => [...prev, reader.result as string]);
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const handleSubmit = (values: FormData) => {
+    setProcessing(true);
+    setFormData(values);
+    getPriceEstimate({ ...values, files: [] })
+      .then(() => {
+        setProcessing(false);
+        navigate("/estimate", { replace: true });
+      })
+      .catch((error) => {
+        console.error("Error during form submission:", error);
+        alert("Wystąpił błąd podczas przesyłania formularza.");
+        setProcessing(false);
+      });
+  };
+
+  if (processing) {
+    return <Waiting />;
+  }
+
   return (
     <>
       <h1>Darmowa wycena mieszkań</h1>
-      <Formik
-        initialValues={formData}
-        onSubmit={(values, { setSubmitting }) => {
-          setTimeout(() => {
-            setFormData(values);
-            getPriceEstimate(values).then(() => {
-              navigate("/estimate", { replace: true });
-            });
-            setSubmitting(false);
-          }, 400);
-        }}
-      >
-        {({ values, handleChange, handleSubmit }) => (
+      <Formik initialValues={formData} onSubmit={handleSubmit}>
+        {({ values, handleChange, handleSubmit, setFieldValue }) => (
           <form onSubmit={handleSubmit}>
             <Location
               handleChange={handleChange}
@@ -152,7 +188,34 @@ const FlatEstimationForm: React.FC = () => {
                 handleChange={handleChange}
               />
             </Grid>
-            <Submit />
+            <h2>Wczytaj zdjęcia (opcjonalnie)</h2>
+            <input
+              id="files"
+              name="files"
+              type="file"
+              accept="image/*"
+              ref={fileRef}
+              multiple
+              onChange={(e) => {
+                if (e.target.files && e.target.files.length > 0) {
+                  const filesArray = Array.from(e.target.files);
+                  setFieldValue("files", filesArray);
+                  displayFiles(filesArray);
+                }
+              }}
+            />
+            <div>
+              {imgSrc.map((src, index) => (
+                <img
+                  key={index}
+                  src={src}
+                  alt={`Preview ${index + 1}`}
+                  width="30%"
+                  style={{ margin: "5px" }}
+                />
+              ))}
+            </div>
+            <Submit disabled={processing} />
           </form>
         )}
       </Formik>

@@ -42,7 +42,6 @@ export default function PhotoUpload() {
       setSubmitting(true);
       uploadPhotos(values.files, JSON.stringify(formData))
         .then((res) => {
-          console.log(">>>", res);
           const photoFeedbackData: PhotoFeedbackProps = {
             luxuryLevel: parseInt(res.luxury_level, 10),
             pros: res.pros,
@@ -67,7 +66,7 @@ export default function PhotoUpload() {
 
   return (
     <div>
-      <h1>Wczytaj zdjęcie</h1>
+      <h2>Wczytaj zdjęcia</h2>
       <Formik initialValues={initialValues} onSubmit={handleSubmit}>
         {({ setFieldValue, isSubmitting }) => (
           <Form>

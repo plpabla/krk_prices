@@ -1,6 +1,6 @@
 import { Button, Grid } from "@mui/material";
 
-export default function Submit() {
+export default function Submit({ disabled = false }: { disabled?: boolean }) {
   return (
     <Grid item xs={12}>
       <Button
@@ -8,6 +8,7 @@ export default function Submit() {
         type="submit"
         variant="contained"
         color="primary"
+        disabled={disabled}
         sx={{ mt: 3, mb: 2 }}
       >
         Wyślij
