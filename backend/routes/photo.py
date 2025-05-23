@@ -37,8 +37,9 @@ async def send_files_to_model(
 
 @router.post("/upload")
 async def upload_photo(
-    files: list[UploadFile] = File(...),
+    files: list[UploadFile] = File(default=None),
     parameters: str = Form(""),
 ) -> PhotoFeedback:
+    files = files or []
     resp = await send_files_to_model(files, parameters)
     return resp
