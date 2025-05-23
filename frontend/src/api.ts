@@ -1,5 +1,6 @@
 import { City, PriceEstimate, ResPhoto } from "@/types/backend";
 import { usePriceStore } from "@/state/price";
+import { usePhotoFeedback } from "@/state/photoFeedback";
 import { FormData as MyFormData } from "@/types/form";
 
 export async function getCities(): Promise<string[]> {
@@ -26,6 +27,7 @@ export async function getDistricts(city: string): Promise<string[]> {
 
 export async function getPriceEstimate(data: MyFormData): Promise<void> {
   const { setPrice } = usePriceStore.getState();
+  const { setFeedback } = usePhotoFeedback.getState();
 
   const response = await fetch(`/api/estimate`, {
     method: "POST",
@@ -39,8 +41,12 @@ export async function getPriceEstimate(data: MyFormData): Promise<void> {
   setPrice(res.price);
 
   const response2 = await uploadPhotos(data.files, JSON.stringify(data));
-  // TODO: handle the response2
   console.log(">>>>>> Photo response:", response2);
+
+  // TODO: Add missing fields to the response
+  setFeedback({
+    luxuryLevel: Number(response2.luxury_level),
+  });
 }
 
 export async function uploadPhoto(file: File): Promise<ResPhoto> {

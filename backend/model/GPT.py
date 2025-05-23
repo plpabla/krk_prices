@@ -29,7 +29,8 @@ def load_images_from_disc(image_paths):
     return images_b64
 
 
-def analyze_apartment_photos(images, metadata: str = None):
+def analyze_apartment_photos(images, metadata=None):
+    print(f">>> Analyzing {len(images)} images...")
     image_contents = []
     for img in images:
         image_contents.append(
@@ -43,7 +44,7 @@ def analyze_apartment_photos(images, metadata: str = None):
     if metadata:
         metadata_description = (
             "\nOto dane ogłoszenia, które możesz uwzględnić w opisie mieszkania:\n"
-            f"{metadata}\n\n"
+            f"{json.dumps(metadata, ensure_ascii=False, indent=2)}"
         )
 
     messages = [
@@ -70,7 +71,7 @@ def analyze_apartment_photos(images, metadata: str = None):
                         "Zwróć odpowiedź w formacie JSON (po polsku), zawierającym:\n"
                         "- pros: lista mocnych stron wnętrza,\n"
                         "- to_fix: lista **niewiążących sugestii** poprawy estetyki i atrakcyjności wnętrza zgodnie z zasadami home stagingu – mających na celu **zwiększenie wizualnej wartości mieszkania**. To mogą być np. pomalowanie ścian na biało lub beżowo, wymiana kolorowych dodatków na neutralne, reorganizacja przestrzeni, usunięcie zbędnych mebli, poprawa oświetlenia, dodanie minimalistycznych dekoracji. Uwzględnij aktualne trendy: **minimalizm, neutralne kolory, uporządkowanie przestrzeni**,\n"
-                        "- luxury_level: liczba całkowita od 1 do 10, gdzie 1 oznacza bardzo podstawowe mieszkanie, a 10 luksusowe,\n"
+                        "- luxury_level: liczba całkowita od 1 do 10, gdzie 1 oznacza bardzo podstawowe mieszkanie, a 10 luksusowe - określ tylko na podstawie zdjęć, a w przypadku braku zdjęć zwróć wartość 5,\n"
                         "- description: atrakcyjny, naturalnie brzmiący opis mieszkania do ogłoszenia — połącz dane ze zdjęć i z metadanych (np. lokalizacja, powierzchnia, piętro, liczba pokoi, balkon, garaż, dostępność itd.). Używaj języka obrazowego, ale unikaj przesady.\n\n"
                         "Poniższy przykład służy jedynie jako kontekst, **nie kopiuj go dosłownie**:\n"
                         "{\n"
@@ -120,7 +121,6 @@ if __name__ == "__main__":
 
     images_b64 = load_images_from_disc(image_files)
     metadata = load_apartment_metadata(metadata_path)
-    metadata = json.dumps(metadata, ensure_ascii=False, indent=2)
     result = analyze_apartment_photos(images_b64, metadata=metadata)
     print(result)
 

@@ -25,7 +25,7 @@ const FlatEstimationForm: React.FC = () => {
   const handleSubmit = (values: FormData) => {
     setProcessing(true);
     setFormData(values);
-    getPriceEstimate({ ...values, files: [] })
+    getPriceEstimate({ ...values })
       .then(() => {
         setProcessing(false);
         navigate("/estimate", { replace: true });
