@@ -1,7 +1,10 @@
 import { create } from "zustand";
 
-type PhotoFeedback = {
+export type PhotoFeedback = {
   luxuryLevel: number;
+  pros: string[];
+  toFix: string[];
+  description: string;
 };
 
 type PhotoFeedbackState = {
@@ -11,6 +14,9 @@ type PhotoFeedbackState = {
 
 const defaultPhotoFeedback: PhotoFeedback = {
   luxuryLevel: 0,
+  pros: [],
+  toFix: [],
+  description: "",
 };
 
 export const usePhotoFeedback = create<PhotoFeedbackState>((set) => ({

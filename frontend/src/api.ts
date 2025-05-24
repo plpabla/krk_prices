@@ -43,9 +43,11 @@ export async function getPriceEstimate(data: MyFormData): Promise<void> {
   const response2 = await uploadPhotos(data.files, JSON.stringify(data));
   console.log(">>>>>> Photo response:", response2);
 
-  // TODO: Add missing fields to the response
   setFeedback({
     luxuryLevel: Number(response2.luxury_level),
+    pros: response2.pros,
+    toFix: response2.to_fix,
+    description: response2.description,
   });
 }
 

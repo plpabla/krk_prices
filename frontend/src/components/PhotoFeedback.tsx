@@ -1,21 +1,9 @@
-export interface PhotoFeedbackProps {
-  luxuryLevel: number;
-  pros: string[];
-  to_fix: string[];
-  description: string;
-}
-
-export const defaultPhotoFeedbackProps: PhotoFeedbackProps = {
-  luxuryLevel: 0,
-  pros: [],
-  to_fix: [],
-  description: "",
-};
+import { PhotoFeedback as PhotoFeedbackProps } from "@/state/photoFeedback";
 
 export default function PhotoFeedback({
   luxuryLevel,
   pros,
-  to_fix,
+  toFix,
   description,
 }: PhotoFeedbackProps) {
   return (
@@ -30,7 +18,7 @@ export default function PhotoFeedback({
         </ul>
         <h3>Co można poprawić?</h3>
         <ul>
-          {to_fix.map((item, index) => (
+          {toFix.map((item, index) => (
             <li key={index}>{item}</li>
           ))}
         </ul>
