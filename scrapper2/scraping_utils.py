@@ -16,9 +16,12 @@ print(SEARCH_URL)
 
 def sanitize_filename(filename):
     # usuń wszystko co nie jest literą, cyfrą, myślnikiem, podkreśleniem lub kropką
-    return re.sub(r'[^a-zA-Z0-9_\-\.]', '_', filename)
+    return re.sub(r"[^a-zA-Z0-9_\-\.]", "_", filename)
 
-def download_image(url: str, folder: str = "otodom_photos", index: Optional[int] = None) -> Optional[str]:
+
+def download_image(
+    url: str, folder: str = "otodom_photos", index: Optional[int] = None
+) -> Optional[str]:
     if not os.path.exists(folder):
         os.makedirs(folder)
     # Pobierz ostatni fragment URL bez parametrów GET
@@ -33,13 +36,13 @@ def download_image(url: str, folder: str = "otodom_photos", index: Optional[int]
         filename += ".jpg"
     filepath = os.path.join(folder, filename)
 
-    print(f"Pobieram zdjęcie: {url}, zapis jako: {filename}")
+    # print(f"Pobieram zdjęcie: {url}, zapis jako: {filename}")
     try:
         response = requests.get(url)
         response.raise_for_status()
         with open(filepath, "wb") as f:
             f.write(response.content)
-        print(f"Zapisano zdjęcie jako: {filepath}")
+        # print(f"Zapisano zdjęcie jako: {filepath}")
         return filepath
     except Exception as e:
         print(f"Błąd pobierania {url}: {e}")
@@ -159,12 +162,12 @@ def extract_data(
         photos = []
         images = ad_data.get("images", [])
 
-        print(f"Liczba zdjęć: {len(images)}")
-        for i, img in enumerate(images):
-            print(f"Zdjęcie {i}: {img}")
+        print(f"    Liczba zdjęć: {len(images)}")
+        # for i, img in enumerate(images):
+        #     print(f"Zdjęcie {i}: {img}")
 
         for img in images:
-            print(img)  # -> Sprawdź co jest w tej zmiennej
+            # print(img)  # -> Sprawdź co jest w tej zmiennej
             photo_url = img.get("large") or img.get("full") or img.get("medium")
             if photo_url:
                 photos.append(photo_url)

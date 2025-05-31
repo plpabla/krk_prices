@@ -1,6 +1,9 @@
 import argparse
-from scraping_utils import get_n_pages
+import asyncio
 import pandas as pd
+
+from scraping_utils import get_n_pages
+from add_luxury_level import add_luxury_level
 
 
 def create_parser() -> argparse.ArgumentParser:
@@ -26,7 +29,7 @@ def create_parser() -> argparse.ArgumentParser:
     return parser
 
 
-def main():
+async def main():
     """Main entry point for the scraper CLI."""
     parser = create_parser()
     args = parser.parse_args()
@@ -53,8 +56,10 @@ def main():
 
     df.to_csv(args.output)
     print(f"\nScraping completed. Found {len(df)} listings.")
-    print(f"Data saved to {args.output}")
+    print(f"Data saved to {args.output}. Starting to add luxury levels...")
+
+    await add_luxury_level(args.output, photos_dir="otodom_photos/")
 
 
 if __name__ == "__main__":
-    main()
+    asyncio.run(main())
