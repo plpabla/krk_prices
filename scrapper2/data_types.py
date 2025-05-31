@@ -38,6 +38,8 @@ class RealEstateListing:
 
     photos: List[str] = field(default_factory=list)  # lista URLi do zdjęć
 
+    collage: Optional[str] = None
+
     # Metadata
     scrapped_date: datetime.date = datetime.date.today()
 
@@ -71,4 +73,5 @@ class RealEstateListing:
             ownership=cls.MISSING_INFO,
             ad_type=cls.MISSING_INFO,
             photos=[],  # Initialize with an empty list
+            collage=None,  # Initialize with None
         )
