@@ -12,7 +12,7 @@ type PhotoFeedbackState = {
   setFeedback: (data: PhotoFeedback) => void;
 };
 
-const defaultPhotoFeedback: PhotoFeedback = {
+export const defaultPhotoFeedback: PhotoFeedback = {
   luxuryLevel: 0,
   pros: [],
   toFix: [],

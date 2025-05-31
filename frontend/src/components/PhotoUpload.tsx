@@ -3,7 +3,10 @@ import { Formik, Form, FormikHelpers } from "formik";
 
 import { uploadPhotos } from "@/api";
 import PhotoFeedback from "./PhotoFeedback";
-import { PhotoFeedbackProps, defaultPhotoFeedbackProps } from "./PhotoFeedback";
+import {
+  PhotoFeedback as PhotoFeedbackProps,
+  defaultPhotoFeedback,
+} from "@/state/photoFeedback";
 import { useFormStore } from "@/state/formData";
 
 interface FormValues {
@@ -13,9 +16,8 @@ interface FormValues {
 export default function PhotoUpload() {
   const [imgSrc, setImgSrc] = useState<string[]>([]);
   const [processed, setProcessed] = useState<boolean>(false);
-  const [photoFeedback, setPhotoFeedback] = useState<PhotoFeedbackProps>(
-    defaultPhotoFeedbackProps
-  );
+  const [photoFeedback, setPhotoFeedback] =
+    useState<PhotoFeedbackProps>(defaultPhotoFeedback);
   const fileRef = useRef<HTMLInputElement>(null);
   const { formData } = useFormStore();
 
@@ -45,7 +47,7 @@ export default function PhotoUpload() {
           const photoFeedbackData: PhotoFeedbackProps = {
             luxuryLevel: parseInt(res.luxury_level, 10),
             pros: res.pros,
-            to_fix: res.to_fix,
+            toFix: res.to_fix,
             description: res.description,
           };
           setPhotoFeedback(photoFeedbackData);

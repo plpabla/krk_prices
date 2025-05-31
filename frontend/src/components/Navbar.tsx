@@ -8,9 +8,9 @@ export default function Navbar() {
         <li>
           <NavLink to="/">Wycena</NavLink>
         </li>
-        <li>
+        {/* <li>
           <NavLink to="/photo">Analiza zdjęć</NavLink>
-        </li>
+        </li> */}
         <li>
           <NavLink to="/contact">Kontakt</NavLink>
         </li>
