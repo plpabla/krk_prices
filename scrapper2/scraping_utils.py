@@ -6,7 +6,9 @@ import json
 from typing import Optional, Dict, Any
 from data_types import RealEstateListing
 import os
-import requests
+from PIL import Image
+import math
+from io import BytesIO
 
 BASE_URL = "https://www.otodom.pl"
 CITY = "krakow"
@@ -19,48 +21,48 @@ def sanitize_filename(filename):
     return re.sub(r"[^a-zA-Z0-9_\-\.]", "_", filename)
 
 
-def download_image(
-    url: str, folder: str = "otodom_photos", index: Optional[int] = None
-) -> Optional[str]:
-    if not os.path.exists(folder):
-        os.makedirs(folder)
-    # Pobierz ostatni fragment URL bez parametrów GET
-    filename = url.split("/")[-1].split("?")[0]
-    # Sanitacja nazwy pliku
-    filename = sanitize_filename(filename)
-    # Dodaj indeks, jeśli jest podany (zapobiegnie nadpisaniu)
-    if index is not None:
-        name, ext = os.path.splitext(filename)
-        filename = f"{name}_{index}{ext}"
-    if not filename.lower().endswith(".jpg"):
-        filename += ".jpg"
-    filepath = os.path.join(folder, filename)
-
-    # print(f"Pobieram zdjęcie: {url}, zapis jako: {filename}")
+def download_image_to_memory(url: str) -> Optional[Image.Image]:
+    """Pobierz obraz do pamięci i zwróć obiekt PIL.Image"""
+    print(f"Pobieram zdjęcie do pamięci: {url}")
     try:
         response = requests.get(url)
         response.raise_for_status()
-        with open(filepath, "wb") as f:
-            f.write(response.content)
-        # print(f"Zapisano zdjęcie jako: {filepath}")
-        return filepath
+        img = Image.open(BytesIO(response.content))
+        return img
     except Exception as e:
-        print(f"Błąd pobierania {url}: {e}")
+        print(f"Błąd pobierania lub otwierania obrazu {url}: {e}")
         return None
+
+
+def create_collage(images: list[Image.Image], collage_path: str, images_per_row=3):
+    if not images:
+        return
+
+    # rozmiar pojedynczego obrazka
+    img_width, img_height = images[0].size
+    n_images = len(images)
+
+    # obliczamy liczbę rzędów
+    rows = math.ceil(n_images / images_per_row)
+
+    # rozmiar końcowego kolażu
+    collage_width = images_per_row * img_width
+    collage_height = rows * img_height
+
+    collage = Image.new("RGB", (collage_width, collage_height))
+
+    for idx, img in enumerate(images):
+        x = (idx % images_per_row) * img_width
+        y = (idx // images_per_row) * img_height
+        collage.paste(img, (x, y))
+
+    collage.save(collage_path)
+    print(f"Kolaż zapisany jako: {collage_path}")
 
 
 def _extract_json_from_script(
     soup: BeautifulSoup, script_id: str = "__NEXT_DATA__"
 ) -> Optional[Dict]:
-    """Extract JSON data from a script tag.
-
-    Args:
-        soup: BeautifulSoup object containing the page content
-        script_id: ID of the script tag containing JSON data
-
-    Returns:
-        Parsed JSON data as a dictionary or None if extraction fails
-    """
     try:
         script_tag = soup.find("script", {"id": script_id})
         if not script_tag or not script_tag.string:
@@ -78,57 +80,15 @@ def _extract_ad_data(soup: BeautifulSoup) -> Optional[Dict]:
     return json_data.get("props", {}).get("pageProps", {}).get("ad", {})
 
 
-def _save_ad_data_to_file(url: str, ad_data: dict) -> None:
-    """Save ad data as formatted JSON for analysis purposes.
-
-    Args:
-        url: The listing URL to use for the filename
-        ad_data: The ad data dictionary to save
-    """
-    try:
-        from pathlib import Path
-
-        # Create logs directory if it doesn't exist
-        log_dir = Path("logs")
-        log_dir.mkdir(exist_ok=True)
-
-        # Create filename using URL slug
-        slug = url.split("/")[-1]
-        log_file = log_dir / f"{slug}_ad_data.json"
-
-        # Write formatted JSON
-        with open(log_file, "w", encoding="utf-8") as f:
-            json.dump(ad_data, f, indent=4, ensure_ascii=False)
-    except Exception as e:
-        print(f"Error saving ad_data to file: {str(e)}")
-
-
 def _load_page(url: str) -> BeautifulSoup:
-    """Load and parse a webpage."""
     res = requests.get(url, headers={"User-Agent": "Mozilla/5.0"})
     res.raise_for_status()
     soup = BeautifulSoup(res.text, "html.parser")
     return soup
 
 
-def _extract_number(text: str) -> Optional[float]:
-    """Extract number from text, handling various formats"""
-    try:
-        # Remove currency symbols, spaces, and convert commas to dots
-        cleaned = re.sub(r"[^\d,.]", "", text.replace(",", "."))
-        # Handle cases with multiple dots (take the last one as decimal separator)
-        parts = cleaned.split(".")
-        if len(parts) > 2:
-            cleaned = "".join(parts[:-1]) + "." + parts[-1]
-        return float(cleaned) if cleaned else None
-    except ValueError:
-        return None
-
-
 def get_links_for_search_page(n: int) -> list[str]:
-    """Get all listing links from a search results page."""
     url = SEARCH_URL + str(n)
-    # print(f"Getting links from {url}")
     soup = _load_page(url)
     json_data = _extract_json_from_script(soup)
 
@@ -144,19 +104,10 @@ def get_links_for_search_page(n: int) -> list[str]:
 def extract_data(
     url: str, soup: BeautifulSoup, debug: bool = False
 ) -> RealEstateListing:
-    """Extract data from a listing page and return a RealEstateListing instance"""
     try:
         ad_data = _extract_ad_data(soup)
         if not ad_data:
             print(f"Warning: Could not extract ad data from {url}")
-            return RealEstateListing.create_empty(url)
-
-        # Save the ad data if in debug mode
-        if debug:
-            _save_ad_data_to_file(url, ad_data)
-
-        if not ad_data:
-            print(f"Warning: Could not find ad data in JSON for {url}")
             return RealEstateListing.create_empty(url)
 
         photos = []
@@ -167,22 +118,34 @@ def extract_data(
         #     print(f"Zdjęcie {i}: {img}")
 
         for img in images:
-            # print(img)  # -> Sprawdź co jest w tej zmiennej
-            photo_url = img.get("large") or img.get("full") or img.get("medium")
+            photo_url = (
+                img.get("thumbnail")
+                or img.get("small")
+                or img.get("medium")
+                or img.get("large")
+            )
             if photo_url:
                 photos.append(photo_url)
 
-        local_photo_paths = []
-        # Utwórz folder na zdjęcia wg slug z URL
+        # Utwórz folder na kolaże wg slug z URL
         slug = url.split("/")[-1]
         folder = os.path.join("otodom_photos", slug)
         if not os.path.exists(folder):
             os.makedirs(folder)
 
-        for idx, photo_url in enumerate(photos):
-            local_path = download_image(photo_url, folder=folder, index=idx)
-            if local_path:
-                local_photo_paths.append(local_path)
+        pil_images = []
+        for photo_url in photos:
+            img = download_image_to_memory(photo_url)
+            if img:
+                pil_images.append(img)
+
+        collage_path = os.path.join(folder, f"{slug}_collage.jpg")
+
+        if pil_images:
+            create_collage(pil_images, collage_path)
+            collage_file = collage_path
+        else:
+            collage_file = None
 
         location = (
             ad_data.get("location", {})
@@ -200,7 +163,7 @@ def extract_data(
         rooms_num = ad_data.get("target", {}).get("Rooms_num", [0])[0]
 
         return RealEstateListing(
-            slug=url.split("/")[-1],
+            slug=slug,
             url=url,
             name=ad_data.get("title", None),
             price=ad_data.get("target", {}).get("Price", None),
@@ -218,7 +181,8 @@ def extract_data(
             market=ad_data.get("target", {}).get("MarketType", None),
             ownership=ad_data.get("target", {}).get("Building_ownership", [None])[0],
             ad_type=ad_data.get("advertiserType", "brak informacji"),
-            photos=local_photo_paths,  # zamiast linków, ścieżki lokalne
+            photos=[],  # Nie zapisujemy pojedynczych zdjęć na dysk ani ścieżek
+            collage=collage_file,
         )
 
     except Exception as e:
@@ -232,11 +196,9 @@ def extract_data(
 def get_one_search_page(
     n: int, df_prev: pd.DataFrame, debug: bool = False
 ) -> pd.DataFrame:
-    """Get all listings from a single search page and return them as a DataFrame."""
     links = get_links_for_search_page(n)
     data_list = []
     for link in links:
-        # I'm getting duplicates - URL can end with ID.xxxxx or IDxxxxx
         link = re.sub(r"ID\.", r"ID", link)
         if (not df_prev.empty) and (link in df_prev["url"].values):
             continue
@@ -263,7 +225,6 @@ def get_one_search_page(
 def get_n_pages(
     n: int, df_prev: pd.DataFrame, offset: int = 0, debug: bool = False
 ) -> pd.DataFrame:
-    """Get listings from multiple pages and combine them into a single DataFrame."""
     df = df_prev
     for i in range(offset, offset + n):
         print(f"\nProcessing page {i} of {offset + n -1}")
@@ -271,7 +232,6 @@ def get_n_pages(
         if df.empty:
             df = page_df
         elif not page_df.empty:
-            # TODO: I'm getting a warning here: FutureWarning: The behavior of DataFrame concatenation with empty or all-NA entries is deprecated
             page_df = page_df.dropna(axis=1, how="all")
             df = pd.concat([df, page_df], ignore_index=False)
         else:
