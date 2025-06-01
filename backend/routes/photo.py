@@ -29,11 +29,11 @@ async def send_files_to_model(
         pass
 
     return PhotoFeedback(
-        attractiveness_level=resp["attractiveness_level"],
-        attractiveness_reason=resp["attractiveness_reason"],
-        pros=resp["pros"],
-        to_fix=resp["to_fix"],
-        description=resp["description"],
+        attractiveness_level=resp.get("attractiveness_level", 0),
+        attractiveness_reason=resp.get("attractiveness_reason", "brak danych"),
+        pros=resp.get("pros", []),
+        to_fix=resp.get("to_fix", []),
+        description=resp.get("description", ""),
     )
 
 
