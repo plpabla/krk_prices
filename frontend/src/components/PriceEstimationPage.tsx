@@ -8,6 +8,7 @@ export default function PriceEstimationPage() {
   const { price } = usePriceStore();
   const { feedback } = usePhotoFeedback();
   const luxuryLevel = feedback.luxuryLevel;
+  const luxuryReason = feedback.luxuryReason;
 
   return (
     <>

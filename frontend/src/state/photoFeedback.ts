@@ -2,6 +2,7 @@ import { create } from "zustand";
 
 export type PhotoFeedback = {
   luxuryLevel: number;
+  luxuryReason: string;
   pros: string[];
   toFix: string[];
   description: string;
@@ -14,6 +15,7 @@ type PhotoFeedbackState = {
 
 export const defaultPhotoFeedback: PhotoFeedback = {
   luxuryLevel: 0,
+  luxuryReason: "",
   pros: [],
   toFix: [],
   description: "",

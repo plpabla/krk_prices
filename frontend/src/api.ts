@@ -45,6 +45,7 @@ export async function getPriceEstimate(data: MyFormData): Promise<void> {
 
   setFeedback({
     luxuryLevel: Number(response2.attractiveness_level),
+    luxuryReason: response2.attractiveness_reason,
     pros: response2.pros,
     toFix: response2.to_fix,
     description: response2.description,

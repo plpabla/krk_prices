@@ -12,6 +12,7 @@ export type PriceEstimate = {
 
 export type ResPhoto = {
   attractiveness_level: string;
+  attractiveness_reason: string;
   type: string;
   pros: string[];
   to_fix: string[];

@@ -2,13 +2,15 @@ import { PhotoFeedback as PhotoFeedbackProps } from "@/state/photoFeedback";
 
 export default function PhotoFeedback({
   luxuryLevel,
+  luxuryReason,
   pros,
   toFix,
   description,
 }: PhotoFeedbackProps) {
   return (
     <>
-      <h2>Analiza zdjęcia - poziom luksusu: {luxuryLevel}/10</h2>
+      <h2>Analiza zdjęcia - poziom atrakcyjności: {luxuryLevel}/10</h2>
+      <p>{luxuryReason}</p>
       <div>
         <h3>Co jest dobrze?</h3>
         <ul>
@@ -25,7 +27,7 @@ export default function PhotoFeedback({
 
         {description && (
           <div>
-            <h3>Opis:</h3>
+            <h3>Sugerowany opis</h3>
             <p>{description}</p>
           </div>
         )}

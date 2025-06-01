@@ -45,7 +45,8 @@ export default function PhotoUpload() {
       uploadPhotos(values.files, JSON.stringify(formData))
         .then((res) => {
           const photoFeedbackData: PhotoFeedbackProps = {
-            luxuryLevel: parseInt(res.luxury_level, 10),
+            luxuryLevel: parseInt(res.attractiveness_level, 10),
+            luxuryReason: res.attractiveness_reason,
             pros: res.pros,
             toFix: res.to_fix,
             description: res.description,
