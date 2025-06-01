@@ -6,7 +6,6 @@ from dotenv import load_dotenv
 
 # Załaduj zmienne z pliku .env
 load_dotenv()
-
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
 
@@ -21,24 +20,17 @@ def encode_image_to_base64(image_path):
 
 
 def load_images_from_disc(image_paths):
-    images_b64 = []
-    for path in image_paths:
-        image_base64 = encode_image_to_base64(path)
-        images_b64.append(image_base64)
-
-    return images_b64
+    return [encode_image_to_base64(path) for path in image_paths]
 
 
-def analyze_apartment_photos(images, metadata=None):
-    print(f">>> Analyzing {len(images)} images...")
-    image_contents = []
-    for img in images:
-        image_contents.append(
-            {
-                "type": "image_url",
-                "image_url": {"url": f"data:image/jpeg;base64,{img}"},
-            }
-        )
+def analyze_apartment_photos(images_b64, metadata=None):
+    image_contents = [
+        {
+            "type": "image_url",
+            "image_url": {"url": f"data:image/jpeg;base64,{img_b64}"},
+        }
+        for img_b64 in images_b64
+    ]
 
     metadata_description = ""
     if metadata:
@@ -51,13 +43,13 @@ def analyze_apartment_photos(images, metadata=None):
         {
             "role": "system",
             "content": (
-                "Jesteś ekspertem od sprzedaży nieruchomości. "
-                "Analizujesz zdjęcia mieszkań pod kątem atrakcyjności wizualnej, stylu i ogólnego wrażenia. "
-                "Zwracasz uwagę na wystrój, światło, porządek i kolorystykę. Oceniasz je z perspektywy potencjalnego kupującego. "
-                "Uwzględniasz zasady home stagingu, aby zwiększyć wizualną wartość mieszkania. "
-                "Uwzględnij dostępne dane o mieszkaniu, takie jak lokalizacja, powierzchnia, piętro, liczba pokoi, balkon, garaż itp. "
-                "**Odpowiedź zwróć w formacie JSON bez dodatkowego formatowania**. "
-                "W przypadku braku danych, zwróć pustą listę lub null w odpowiednich polach, zachowując pełną strukturę JSON."
+                "Jesteś ekspertem od nieruchomości.\n"
+                "Na podstawie zdjęć oceń atrakcyjność mieszkania z punktu widzenia sprzedaży, "
+                "w skali od 1 do 10, gdzie 1 to bardzo mało atrakcyjne, a 10 to wyjątkowo atrakcyjne wnętrze gotowe do sprzedaży.\n"
+                "Bierz pod uwagę aktualne trendy: mieszkania najlepiej sprzedają się, gdy są czyste, jasne, odświeżone, urządzone minimalistycznie i schludnie.\n"
+                "Uwaga: pola `attractiveness_level`, `attractiveness_reason`, `pros`, `to_fix` generuj wyłącznie na podstawie zdjęć — ignoruj metadane.\n"
+                "Pole `description` generuj na podstawie zarówno zdjęć, jak i danych z ogłoszenia (metadanych).\n"
+                "Wynik zwróć jako surowy JSON bez formatowania tekstowego."
             ),
         },
         {
@@ -66,31 +58,25 @@ def analyze_apartment_photos(images, metadata=None):
                 {
                     "type": "text",
                     "text": (
-                        "Na podstawie **wszystkich załączonych zdjęć** oraz poniższych danych o mieszkaniu:\n"
-                        f"{metadata_description}\n\n"
-                        "Zwróć odpowiedź w formacie JSON (po polsku), zawierającym:\n"
-                        "- pros: lista mocnych stron wnętrza,\n"
-                        "- to_fix: lista **niewiążących sugestii** poprawy estetyki i atrakcyjności wnętrza zgodnie z zasadami home stagingu – mających na celu **zwiększenie wizualnej wartości mieszkania**. To mogą być np. pomalowanie ścian na biało lub beżowo, wymiana kolorowych dodatków na neutralne, reorganizacja przestrzeni, usunięcie zbędnych mebli, poprawa oświetlenia, dodanie minimalistycznych dekoracji. Uwzględnij aktualne trendy: **minimalizm, neutralne kolory, uporządkowanie przestrzeni**,\n"
-                        "- luxury_level: liczba całkowita od 1 do 10, gdzie 1 oznacza bardzo podstawowe mieszkanie, a 10 luksusowe - określ tylko na podstawie zdjęć, a w przypadku braku zdjęć zwróć wartość 5,\n"
-                        "- description: atrakcyjny, naturalnie brzmiący opis mieszkania do ogłoszenia — połącz dane ze zdjęć i z metadanych (np. lokalizacja, powierzchnia, piętro, liczba pokoi, balkon, garaż, dostępność itd.). Używaj języka obrazowego, ale unikaj przesady.\n\n"
-                        "Poniższy przykład służy jedynie jako kontekst, **nie kopiuj go dosłownie**:\n"
+                        "Na podstawie **wyłącznie kolażu zdjęć** mieszkania (ignoruj dane tekstowe i metadane) wygeneruj:\n"
+                        "- `attractiveness_level`: liczba całkowita od 1 do 10 (gdzie 1 to bardzo nieatrakcyjne wnętrze, a 10 to idealnie przygotowane do sprzedaży),\n"
+                        "- `attractiveness_reason`: krótkie uzasadnienie oceny atrakcyjności (na podstawie zdjęć),\n"
+                        "**W tej części odpowiedzi zastosuj ten sam styl, co w poniższym przykładzie —\n"
+                        "uzasadnienie powinno być konkretne, wyważone, napisane z taktem i empatią, tak aby nie urazić odbiorcy — "
+                        "powinno zawierać przynajmniej 2–3 zdania, które konstruktywnie opisują cechy mieszkania, "
                         "{\n"
-                        '  "pros": [\n'
-                        '    "nowoczesny wystrój",\n'
-                        '    "dużo naturalnego światła",\n'
-                        '    "przestronny balkon"\n'
-                        "  ],\n"
-                        '  "to_fix": [\n'
-                        '    "można rozważyć pomalowanie ścian na biało, aby rozjaśnić wnętrze i nadać mu bardziej nowoczesny charakter",\n'
-                        '    "usunąć rzeczy osobiste z sypialni i kuchni, aby wnętrza były bardziej neutralne i uniwersalne",\n'
-                        '    "dodać minimalistyczne dekoracje, np. rośliny doniczkowe lub jasne poduszki na sofie",\n'
-                        '    "uporządkować balkon i ewentualnie wstawić prosty zestaw mebli ogrodowych w stonowanej kolorystyce"\n'
-                        '    "w salonie można zastąpić ciężkie zasłony lekkimi, jasnymi firanami, a także rozważyć ustawienie mebli w sposób optycznie powiększający przestrzeń",\n'
-                        '    "w przedpokoju warto zadbać o dobre oświetlenie i usunąć nadmiar kurtek, butów lub drobnych przedmiotów, aby stworzyć czyste pierwsze wrażenie"\n'
-                        "  ],\n"
-                        '  "luxury_level": 7,\n'
-                        '  "description": "Przestronne mieszkanie z dużym balkonem, idealne dla rodziny lub pary. Nowoczesny wystrój i dużo naturalnego światła sprawiają, że wnętrza są przytulne i komfortowe. Mieszkanie znajduje się w spokojnej okolicy Podgórza, w budynku z windą i garażem. Warto jednak rozważyć drobne zabiegi odświeżające, takie jak rozjaśnienie kolorystyki i uporządkowanie przestrzeni, co dodatkowo podniesie jego atrakcyjność."\n'
-                        "}"
+                        '  "attractiveness_level": 7,\n'
+                        '  "attractiveness_reason": "Wnętrze mieszkania jest jasne, estetycznie urządzone i dobrze przygotowane do sprzedaży. Dominuje neutralna kolorystyka i minimalistyczny styl, co trafia w gusta szerokiego grona kupujących. Brakuje jedynie drobnych akcentów, które mogłyby dodać ciepła i indywidualnego charakteru." '
+                        "}\n\n"
+                        "- `pros`: lista mocnych stron widocznych na zdjęciach,\n"
+                        "- `to_fix`: lista sugestii poprawy estetyki wnętrza (wg zasad home stagingu oraz aktualnych trendów).\n\n"
+                        "**Następnie**, tylko pole `description` wygeneruj na podstawie **zarówno zdjęć, jak i poniższych danych o mieszkaniu**:\n"
+                        f"{metadata_description}\n\n"
+                        "Wygeneruj:\n"
+                        "- `description`: atrakcyjny, naturalnie brzmiący opis mieszkania do ogłoszenia.\n\n"
+                        "**Zwróć wynik w formacie JSON, z polami dokładnie w tej kolejności:**\n"
+                        "`attractiveness_level`, `attractiveness_reason`, `pros`, `to_fix`, `description`.\n\n"
+                        "Nie dodawaj komentarzy, tekstów wstępnych ani formatowania Markdown — tylko surowy JSON."
                     ),
                 },
                 *image_contents,
@@ -99,29 +85,28 @@ def analyze_apartment_photos(images, metadata=None):
     ]
 
     response = openai.chat.completions.create(
-        model="gpt-4o", messages=messages, max_tokens=3000
+        model="gpt-4o",
+        messages=messages,
+        max_tokens=4000,
     )
 
-    json_txt = response.choices[0].message.content
+    json_txt = response.choices[0].message.content.strip()
     if json_txt.startswith("```json"):
-        json_txt = json_txt[7:-3]
+        json_txt = json_txt[7:-3].strip()
+
     return json.loads(json_txt)
 
 
 if __name__ == "__main__":
     image_files = [
         os.path.join("..", "..", "photos", "1.jpg"),
-        os.path.join("..", "..", "photos", "2.jpg"),
-        os.path.join("..", "..", "photos", "3.jpg"),
-        os.path.join("..", "..", "photos", "4.jpg"),
-        os.path.join("..", "..", "photos", "5.jpg"),
-        os.path.join("..", "..", "photos", "6.jpg"),
     ]
     metadata_path = os.path.join("..", "..", "user_input", "json.txt")
 
     images_b64 = load_images_from_disc(image_files)
     metadata = load_apartment_metadata(metadata_path)
+
     result = analyze_apartment_photos(images_b64, metadata=metadata)
-    print(result)
+    print(json.dumps(result, ensure_ascii=False, indent=2))
 
 # <3
