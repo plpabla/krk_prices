@@ -42,8 +42,8 @@ def analyze_apartment_photos(images):
                 "Weź pod uwagę aktualne trendy rynkowe: mieszkania najlepiej sprzedają się, gdy są czyste, przestronne, "
                 "odnowione oraz utrzymane w neutralnych kolorach. "
                 "Zwróć odpowiedź w formacie JSON z dwoma polami: "
-                "\"luxury_level\" - liczba całkowita 1-10, "
-                "oraz \"explanation\" - krótkie uzasadnienie oceny. "
+                '"explanation" - krótkie uzasadnienie oceny. '
+                '"luxury_level" - liczba całkowita 1-10, '
                 "Nie dodawaj nic poza tym JSONem."
             ),
         },

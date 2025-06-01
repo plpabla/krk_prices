@@ -26,6 +26,12 @@ def create_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="enable debug mode (saves raw JSON data for each listing)",
     )
+
+    parser.add_argument(
+        "--skip-scrapping",
+        action="store_true",
+        help="skip the scraping process and only add luxury levels to existing data",
+    )
     return parser
 
 
@@ -34,29 +40,34 @@ async def main():
     parser = create_parser()
     args = parser.parse_args()
 
-    print(f"Starting scraping {args.pages} page(s) from OtoDom...")
-    print(f"Results will be saved to {args.output}")
-    if args.debug:
-        print("Debug mode enabled - raw JSON data will be saved to logs/")
+    if args.skip_scrapping:
+        print("Skipping scraping process. Only adding luxury levels to existing data.")
+    else:
+        print(f"Starting scraping {args.pages} page(s) from OtoDom...")
+        print(f"Results will be saved to {args.output}")
+        if args.debug:
+            print("Debug mode enabled - raw JSON data will be saved to logs/")
 
-    df_prev = pd.DataFrame()
-    try:
-        df_prev = pd.read_csv(args.output)
-        df_prev.set_index("slug", inplace=True)
-    except:
-        pass
+        df_prev = pd.DataFrame()
+        try:
+            df_prev = pd.read_csv(args.output)
+            df_prev.set_index("slug", inplace=True)
+        except:
+            pass
 
-    df = get_n_pages(args.pages, df_prev=df_prev, offset=args.offset, debug=args.debug)
-
-    if df.empty:
-        print(
-            "\nNo data was collected. Please check if the website structure has changed."
+        df = get_n_pages(
+            args.pages, df_prev=df_prev, offset=args.offset, debug=args.debug
         )
-        return
 
-    df.to_csv(args.output)
-    print(f"\nScraping completed. Found {len(df)} listings.")
-    print(f"Data saved to {args.output}. Starting to add luxury levels...")
+        if df.empty:
+            print(
+                "\nNo data was collected. Please check if the website structure has changed."
+            )
+            return
+
+        df.to_csv(args.output)
+        print(f"\nScraping completed. Found {len(df)} listings.")
+        print(f"Data saved to {args.output}. Starting to add luxury levels...")
 
     await add_luxury_level(args.output, photos_dir="otodom_photos/")
 

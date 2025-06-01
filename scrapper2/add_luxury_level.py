@@ -3,10 +3,14 @@ import asyncio
 import aiofiles.os
 import os
 
+from GPT_lux_lvl import load_images_from_disk, analyze_apartment_photos
 
-async def get_luxury_level(files: list[str]) -> int:
-    await asyncio.sleep(0)  # Simulate async operation
-    return 5
+
+async def get_luxury_level(files: list[str], photos_path: str = "./") -> int:
+    files = [os.path.join(photos_path, f) for f in files]
+    images = load_images_from_disk(files)
+    res = analyze_apartment_photos(images)
+    return res.get("luxury_level", -1) or -1
 
 
 async def _process_row(df, index, photos_dir: str = "otodom_photos/"):
@@ -26,10 +30,16 @@ async def _process_row(df, index, photos_dir: str = "otodom_photos/"):
         df.at[index, "luxury_level"] = -1
         return
 
-    print(f"Processing {len(files)} files in {photo_path}")
+    print(f"[{index}] Processing {len(files)} files in {photo_path}")
 
-    luxury_level = await get_luxury_level(files)
+    try:
+        luxury_level = await get_luxury_level(files, photo_path)
+    except Exception as e:
+        print(f"[{index}] Error processing files: {e}")
+        luxury_level = -1
+
     df.at[index, "luxury_level"] = luxury_level
+    print(f"[{index}] Luxury level: {luxury_level}")
 
 
 def _add_suffix(filename: str, suffix: str) -> str:
