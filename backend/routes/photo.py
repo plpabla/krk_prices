@@ -18,7 +18,7 @@ async def send_files_to_model(
 
     photos_base64 = [base64.b64encode(photo).decode("utf-8") for photo in photos]
     resp = {
-        "luxury_level": 0,
+        "attractiveness_level": 0,
     }
     try:
         resp = analyze_apartment_photos(photos_base64, form_data)
@@ -28,7 +28,7 @@ async def send_files_to_model(
         pass
 
     return PhotoFeedback(
-        luxury_level=resp["luxury_level"],
+        attractiveness_level=resp["attractiveness_level"],
         pros=resp["pros"],
         to_fix=resp["to_fix"],
         description=resp["description"],
