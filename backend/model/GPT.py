@@ -48,6 +48,7 @@ def analyze_apartment_photos(images_b64, metadata=None):
                 "w skali od 1 do 10, gdzie 1 to bardzo mało atrakcyjne, a 10 to wyjątkowo atrakcyjne wnętrze gotowe do sprzedaży.\n"
                 "Bierz pod uwagę aktualne trendy: mieszkania najlepiej sprzedają się, gdy są czyste, jasne, odświeżone, urządzone minimalistycznie i schludnie.\n"
                 "Uwaga: pola `attractiveness_level`, `attractiveness_reason`, `pros`, `to_fix` generuj wyłącznie na podstawie zdjęć — ignoruj metadane.\n"
+                "W przypadku braku wystarczających informacji na zdjęciach, zwróć taką samą strukturę JSON, ale z pustymi polami (np. pustą tablicą).\n"
                 "Pole `description` generuj na podstawie zarówno zdjęć, jak i danych z ogłoszenia (metadanych).\n"
                 "Wynik zwróć jako surowy JSON bez formatowania tekstowego."
             ),
