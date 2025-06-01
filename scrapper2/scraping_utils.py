@@ -23,7 +23,7 @@ def sanitize_filename(filename):
 
 def download_image_to_memory(url: str) -> Optional[Image.Image]:
     """Pobierz obraz do pamięci i zwróć obiekt PIL.Image"""
-    print(f"Pobieram zdjęcie do pamięci: {url}")
+    # print(f"Pobieram zdjęcie do pamięci: {url}")
     try:
         response = requests.get(url)
         response.raise_for_status()
