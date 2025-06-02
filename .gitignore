@@ -7,6 +7,7 @@ venv/
 !model/data/krakow.csv
 !model/data/testowy.csv
 !otodom_1000_luxury_level.csv
+!scrapper2/lux/lux.csv
 *_photos/
 
 *.ipynb_checkpoints/
