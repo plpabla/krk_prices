@@ -8,6 +8,7 @@ venv/
 !model/data/testowy.csv
 !otodom_1000_luxury_level.csv
 !scrapper2/lux/lux.csv
+!scrapper2/lux/lux_district_train_predictions.csv
 *_photos/
 
 *.ipynb_checkpoints/
