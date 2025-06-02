@@ -5,12 +5,12 @@ from sklearn.model_selection import train_test_split
 from util import get_filename_and_extension
 
 
-def create_train_test(source_filename: str) -> tuple[str, str]:
+def create_train_test(source_filename: str, test_size: float = 0.2) -> tuple[str, str]:
     # Wczytaj dane z pliku CSV
     data = pd.read_csv(source_filename)
 
     train, test = train_test_split(
-        data, test_size=0.2, random_state=42, stratify=data["location_district"]
+        data, test_size=test_size, random_state=42, stratify=data["location_district"]
     )
 
     base_name, extension = get_filename_and_extension(source_filename)
