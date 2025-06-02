@@ -34,6 +34,12 @@ class Model:
         print(">>> Raw data for prediction:", data)
         return self._model.predict(data)
 
+    def predict_raw(self, data: np.array):
+        """Make prediction using the loaded model with raw data."""
+        if self._model is None:
+            raise ValueError("Model is not loaded.")
+        return self._model.predict(data)
+
     def get_districts(self) -> list[str]:
         return [v for v in self._cat_features_mapping["location_district"].values()]
 

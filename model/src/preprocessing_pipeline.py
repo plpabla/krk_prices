@@ -12,7 +12,6 @@ if __name__ == "__main__":
         city = sys.argv[1]
     else:
         print("Please provide a filename as argument")
-        print("Usage: python create_train_test.py <filename>")
         # sys.exit(1)
         city = "otodom"
 
