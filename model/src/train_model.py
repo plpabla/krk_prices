@@ -48,7 +48,7 @@ def run(filename: str = "otodom"):
     params_grid = {
         "max_depth": [10],  # głębokość drzew - kontroluje złożoność
         "learning_rate": [0.005],  # szybkość uczenia
-        "n_estimators": [20000],  # liczba drzew
+        "n_estimators": [5000],  # liczba drzew
         "subsample": [0.3],  # ile danych używać do budowy każdego drzewa
         "colsample_bytree": [0.8],  # ile cech brać pod uwagę na drzewo
     }
@@ -73,7 +73,6 @@ def run(filename: str = "otodom"):
 
     print("  ✅ Najlepsze parametry: ", model_grid.best_params_)
     print("  ✅ Najlepszy wynik (neg RMSE): ", model_grid.best_score_)
-
 
     # Zapisanie modelu do pliku
     with open(f"../out/{filename}_model.pkl", "wb") as file:
