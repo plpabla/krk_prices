@@ -105,18 +105,41 @@ plt.ylabel("Loss (MSE)")
 plt.grid(True)
 plt.show()
 
-# 12. Porównanie predykcji – wykres
+
+# 12. Porównanie predykcji XGBoost i sieci neuronowej
 plt.figure(figsize=(10, 6))
+
+# Idealna predykcja (linia przerywana)
 plt.plot(y_test_rescaled, y_test_rescaled, color='red', linestyle='--', label='Idealna predykcja')
-plt.scatter(y_test_rescaled, X_test_orig[:, 0], alpha=0.5, color='blue', label='XGBoost')
-plt.scatter(y_test_rescaled, preds_nn_rescaled, alpha=0.5, color='green', label='XGBoost + luxury_level (NN)')
+
+# Mini kropki: XGBoost
+plt.scatter(y_test_rescaled, X_test_orig[:, 0], alpha=0.5, color='blue', s=10, label='XGBoost')
+
+# Mini kropki: Sieć neuronowa
+plt.scatter(y_test_rescaled, preds_nn_rescaled, alpha=0.5, color='green', s=10, label='XGBoost + luxury_level (NN)')
+
+# Czarne strzałki
+for i in range(len(y_test_rescaled)):
+    plt.annotate(
+        '',
+        xy=(y_test_rescaled[i, 0], preds_nn_rescaled[i, 0]),     # koniec (NN)
+        xytext=(y_test_rescaled[i, 0], X_test_orig[i, 0]),       # początek (XGBoost)
+        arrowprops=dict(arrowstyle='->', color='black', alpha=0.7, lw=1.5)
+    )
+
 plt.xlabel('Cena rzeczywista (PLN)')
 plt.ylabel('Cena przewidziana (PLN)')
-plt.title('Porównanie predykcji: XGBoost vs Sieć neuronowa')
+plt.title('Porównanie predykcji: XGBoost vs Sieć neuronowa (ze strzałkami)')
 plt.legend()
 plt.grid(True)
 plt.tight_layout()
 plt.show()
+
+
+
+print(len(y_test_rescaled))  # Ile punktów ogólnie
+print(len(X_test_orig[:, 0]))  # Ile punktów XGBoost
+print(len(preds_nn_rescaled))  # Ile punktów NN
 
 # 13. Błąd vs luxury_level
 luxury_levels = X_test[:, 1].numpy().reshape(-1, 1)  # znormalizowany
