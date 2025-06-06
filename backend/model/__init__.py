@@ -56,7 +56,22 @@ class Model:
         form_data["building_floors"] = data.floorsInBuilding
         form_data["floor"] = data.floor
 
-        lat, lon = calculate_lat_lon(data.location)
+        lat, lon = 50.0647, 19.9450
+        distance_calc_ok = True
+        try:
+            lat, lon = calculate_lat_lon(data.location)
+        except ValueError as e:
+            distance_calc_ok = False
+
+        distance_from_center = calc_distance_from_center(lat, lon)
+        distance_from_other_expensive = calc_distance_from_other_expensive(lat, lon)
+
+        if distance_from_center > 50 or distance_from_other_expensive > 50:
+            distance_calc_ok = False
+
+        if not distance_calc_ok:
+            raise ValueError("Nie można obliczyć odległości. Sprawdź lokalizację.")
+
         form_data["location_lat"] = lat
         form_data["location_lon"] = lon
         form_data["rooms"] = data.rooms
@@ -68,10 +83,8 @@ class Model:
         form_data["utilities_winda"] = int(data.elevator)
         # form_data["utilities_garage"] = int(data.garage) # TODO: add in model or remove from frontend
         # TODO: available in frontend but not used: available from
-        form_data["distance_from_center"] = calc_distance_from_center(lat, lon)
-        form_data["distance_from_other_expensive"] = calc_distance_from_other_expensive(
-            lat, lon
-        )
+        form_data["distance_from_center"] = distance_from_center
+        form_data["distance_from_other_expensive"] = distance_from_other_expensive
 
         print(">>> Form data for prediction:", form_data)
 
@@ -99,7 +112,7 @@ class Model:
 
 
 model = Model(
-    "../model/out/krakow_model.pkl", "../model/out/category_mappings_krakow.pkl"
+    "../model/out/krakow_best_model.pkl", "../model/out/category_mappings_krakow.pkl"
 )
 
 

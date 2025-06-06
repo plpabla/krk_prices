@@ -37,11 +37,22 @@ export async function getPriceEstimate(data: MyFormData): Promise<void> {
     body: JSON.stringify(data),
   });
 
-  const res: PriceEstimate = await response.json();
-  setPrice(res.price);
+  if (!response.ok) {
+    console.error("Failed to fetch price estimate");
+    setPrice(-1);
+    setFeedback({
+      luxuryLevel: 0,
+      luxuryReason: "",
+      pros: [],
+      toFix: [],
+      description: "",
+    });
+    return;
+  }
 
+  const res: PriceEstimate = await response!.json();
+  setPrice(res.price);
   const response2 = await uploadPhotos(data.files, JSON.stringify(data));
-  console.log(">>>>>> Photo response:", response2);
 
   setFeedback({
     luxuryLevel: Number(response2.attractiveness_level),

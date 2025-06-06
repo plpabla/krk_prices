@@ -173,3 +173,29 @@ Domain should be already on Cloudflare
 - add following records
   - `AAAA` for `www` with IPv6 of your server and proxy enabled
   - `AAAA` for `wycenappka.pl` with IPv6 of your server and proxy enabled
+
+# Remote development
+
+Manual so far:
+
+- clone repo
+
+- prepare env
+
+  $ pip install -r requirements.txt
+  $ cd model/src
+  $ python preprocessing_pipeline.py krakow
+  $ python train_model.py krakow
+
+Alternatively, use scp
+
+$ scp -P 10277 krakow_model.pkl <remote>
+
+- prepare container
+
+  $ docker compose build
+  $ docker compose up
+
+If no errors are in console, kill it (Ctrl+C) and run in detached mode
+
+    $ docker compose up -d
