@@ -8,6 +8,15 @@ export default function PriceEstimationPage() {
   const { price } = usePriceStore();
   const { feedback } = usePhotoFeedback();
 
+  if (price === -1) {
+    return (
+      <div>
+        <h1>Wprowadzono niepoprawny adres</h1>
+        <Link to="/">Powrót</Link>
+      </div>
+    );
+  }
+
   return (
     <>
       <div>

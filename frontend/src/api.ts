@@ -39,7 +39,7 @@ export async function getPriceEstimate(data: MyFormData): Promise<void> {
 
   if (!response.ok) {
     console.error("Failed to fetch price estimate");
-    setPrice(0);
+    setPrice(-1);
     setFeedback({
       luxuryLevel: 0,
       luxuryReason: "",
