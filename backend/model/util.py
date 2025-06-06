@@ -13,6 +13,7 @@ def calculate_lat_lon(address: str) -> tuple:
     location = geolocator.geocode(
         address
     )  # Pobieramy dane lokalizacji dla podanego adresu
+    print(f">>> Geolocator found location: {location}")
 
     if location:
         return (
@@ -20,7 +21,7 @@ def calculate_lat_lon(address: str) -> tuple:
             location.longitude,
         )  # Zwracamy szerokość i długość geograficzną
     else:
-        return (50.0647, 19.9450)
+        raise ValueError(f"Nie można znaleźć lokalizacji dla adresu: {address}")
 
 
 __all__ = [
