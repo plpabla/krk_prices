@@ -99,7 +99,7 @@ class Model:
 
 
 model = Model(
-    "../model/out/krakow_model.pkl", "../model/out/category_mappings_krakow.pkl"
+    "../model/out/krakow_best_model.pkl", "../model/out/category_mappings_krakow.pkl"
 )
 
 
