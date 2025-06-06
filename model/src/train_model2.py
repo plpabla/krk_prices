@@ -5,6 +5,9 @@ import pickle
 import optuna
 from sklearn.model_selection import cross_val_score
 from optuna.samplers import RandomSampler
+from sklearn.metrics import median_absolute_error
+from sklearn.metrics import mean_squared_error
+from sklearn.metrics import r2_score
 
 
 # Konwersja kolumn na kategorie
@@ -46,7 +49,7 @@ def objective(trial):
 
 
 # Główna funkcja
-def run(filename: str = "otodom"):
+def run(filename: str = "krakow"):
     global X_train, y_train  # udostępniamy zmienne dla objective()
 
     # Wczytanie danych
@@ -71,6 +74,21 @@ def run(filename: str = "otodom"):
     # Trenowanie najlepszego modelu
     best_model = xgb.XGBRegressor(**best_params, enable_categorical=True,objective="reg:squarederror", random_state=42)
     best_model.fit(X_train, y_train)
+
+    # Predykcje na zbiorze testowym
+    y_pred = best_model.predict(X_test)
+
+    # Obliczenie mediany bezwzględnego błędu
+    med_abs_error = median_absolute_error(y_test, y_pred)
+    print(f"Median Absolute Error na zbiorze testowym: {med_abs_error:.2f}")
+
+    # Obliczenie błędu średniokwadratowego (MSE)
+    mse = mean_squared_error(y_test, y_pred)
+    rmse = mse ** 0.5
+    print(f"Root Mean Squared Error (RMSE) na zbiorze testowym: {rmse:.2f}")
+
+    r2 = r2_score(y_test, y_pred)
+    print(f"R^2 na zbiorze testowym: {r2:.2f}")
 
     # Zapisz model
     with open(f"../out/{filename}_best_model.pkl", "wb") as file:

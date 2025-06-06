@@ -6,9 +6,20 @@ from sklearn.metrics import mean_squared_error
 import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.preprocessing import MinMaxScaler
+from sklearn.metrics import median_absolute_error
+
+import random
+import numpy as np
+import torch
+
+seed = 42
+
+random.seed(seed)
+np.random.seed(seed)
+torch.manual_seed(seed)
 
 # 1. Wczytaj dane
-df = pd.read_csv('lux_district_train_predictions.csv')
+df = pd.read_csv('lux_3k_district_train_predictions.csv')
 
 # 2. Wybrane kolumny
 X_raw = df[['prediction', 'luxury_level']].values.astype(np.float32)
@@ -54,7 +65,6 @@ optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
 epochs = 200
 
 losses = []
-torch.manual_seed(42)
 
 # 8. Trening NN
 for epoch in range(epochs):
@@ -80,11 +90,15 @@ with torch.no_grad():
     preds_nn_rescaled = scaler_y.inverse_transform(preds_nn)
     y_test_rescaled = scaler_y.inverse_transform(y_test.numpy())
 
-    # RMSE sieci neuronowej
-    rmse_nn = np.sqrt(mean_squared_error(y_test_rescaled, preds_nn_rescaled))
+# RMSE sieci neuronowej
+rmse_nn = np.sqrt(mean_squared_error(y_test_rescaled, preds_nn_rescaled))
 
-    # RMSE XGBoost: oryginalna skala predykcji i cen
-    rmse_xgb = np.sqrt(mean_squared_error(y_test_orig, X_test_orig[:, 0].reshape(-1, 1)))
+# RMSE XGBoost: oryginalna skala predykcji i cen
+rmse_xgb = np.sqrt(mean_squared_error(y_test_orig, X_test_orig[:, 0].reshape(-1, 1)))
+
+# Median Absolute Error (MAE)
+mae_xgb = median_absolute_error(y_test_rescaled, X_test_orig[:, 0].reshape(-1, 1))
+mae_nn = median_absolute_error(y_test_rescaled, preds_nn_rescaled)
 
 # 10. Accuracy ±10%
 margin = 0.10
@@ -92,9 +106,33 @@ relative_errors = np.abs(preds_nn_rescaled - y_test_rescaled) / y_test_rescaled
 within_10_percent = (relative_errors <= margin).sum()
 accuracy_10_percent = within_10_percent / len(y_test_rescaled) * 100
 
+
+diff = preds_nn_rescaled.flatten() - X_test_orig[:, 0]
+
+num_lower = np.sum(diff < 0)  # ile razy NN < XGBoost
+num_higher = np.sum(diff > 0)  # ile razy NN > XGBoost
+num_equal = np.sum(diff == 0)  # ile razy są równe (opcjonalnie)
+
+error_xgb = np.abs(X_test_orig[:, 0] - y_test_rescaled.flatten())
+error_nn = np.abs(preds_nn_rescaled.flatten() - y_test_rescaled.flatten())
+
+nn_better = np.sum(error_nn < error_xgb)
+xgb_better = np.sum(error_xgb < error_nn)
+equal_error = np.sum(error_nn == error_xgb)
+
+print(f"NN lepsza w {nn_better} przypadkach")
+print(f"XGBoost lepsza w {xgb_better} przypadkach")
+print(f"Równe błędy w {equal_error} przypadkach")
+
+print(f"Sieć neuronowa ściąga wartość w dół w {num_lower} przypadkach.")
+print(f"Sieć neuronowa podnosi wartość w górę w {num_higher} przypadkach.")
+print(f"Predykcje obu modeli są równe w {num_equal} przypadkach.")
+
 print(f"\n➡️ RMSE XGBoost prediction only: {rmse_xgb:.2f}")
 print(f"➡️ RMSE with neural network (XGBoost + luxury_level): {rmse_nn:.2f}")
 print(f"✅ {accuracy_10_percent:.2f}% predykcji mieści się w ±10% od rzeczywistej ceny.")
+print(f"📉 Median Absolute Error (XGBoost): {mae_xgb:.2f}")
+print(f"📉 Median Absolute Error (NN): {mae_nn:.2f}")
 
 # 11. Wykres strat
 plt.figure(figsize=(10, 4))
@@ -106,7 +144,6 @@ plt.grid(True)
 plt.show()
 
 
-# 12. Porównanie predykcji XGBoost i sieci neuronowej
 plt.figure(figsize=(10, 6))
 
 # Idealna predykcja (linia przerywana)
@@ -118,28 +155,18 @@ plt.scatter(y_test_rescaled, X_test_orig[:, 0], alpha=0.5, color='blue', s=10, l
 # Mini kropki: Sieć neuronowa
 plt.scatter(y_test_rescaled, preds_nn_rescaled, alpha=0.5, color='green', s=10, label='XGBoost + luxury_level (NN)')
 
-# Czarne strzałki
-for i in range(len(y_test_rescaled)):
-    plt.annotate(
-        '',
-        xy=(y_test_rescaled[i, 0], preds_nn_rescaled[i, 0]),     # koniec (NN)
-        xytext=(y_test_rescaled[i, 0], X_test_orig[i, 0]),       # początek (XGBoost)
-        arrowprops=dict(arrowstyle='->', color='black', alpha=0.7, lw=1.5)
-    )
-
 plt.xlabel('Cena rzeczywista (PLN)')
 plt.ylabel('Cena przewidziana (PLN)')
-plt.title('Porównanie predykcji: XGBoost vs Sieć neuronowa (ze strzałkami)')
+plt.title('Porównanie predykcji: XGBoost vs Sieć neuronowa')
 plt.legend()
 plt.grid(True)
 plt.tight_layout()
 plt.show()
 
+num_samples_nn = len(preds_nn_rescaled)
 
+print(f"Liczba próbek predykcji sieci neuronowej: {num_samples_nn}")
 
-print(len(y_test_rescaled))  # Ile punktów ogólnie
-print(len(X_test_orig[:, 0]))  # Ile punktów XGBoost
-print(len(preds_nn_rescaled))  # Ile punktów NN
 
 # 13. Błąd vs luxury_level
 luxury_levels = X_test[:, 1].numpy().reshape(-1, 1)  # znormalizowany
